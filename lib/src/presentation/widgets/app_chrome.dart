@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/asset_constants.dart';
+import '../../core/constants/ui_constants.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme_controller.dart';
 
@@ -361,83 +362,37 @@ class UnderlineTabs extends StatelessWidget {
   }
 }
 
-/// The dog-eared file glyph with "EPUB"/"PDF" inside (17x23).
+/// A small text-only "PDF" or "EPUB" label. No file glyph: on covers it sits
+/// in the bottom-right corner, on rows in the top-right corner.
 class FormatBadge extends StatelessWidget {
   final String format;
 
-  /// Colour of the outline, fold and label. Null = the list-row default,
-  /// which follows the theme.
+  /// Text colour. Null = the list-row default, which follows the theme;
+  /// callers drawing on a cover pass white.
   final Color? color;
 
   /// Label colour, when it differs from [color] (Search's faint variant).
   final Color? labelColor;
-
-  /// Dark fill behind the glyph - used when it sits on top of a cover.
-  final bool filled;
 
   const FormatBadge({
     super.key,
     required this.format,
     this.color,
     this.labelColor,
-    this.filled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final light = AppThemeController.instance.isLight;
-    // On app surfaces (no explicit colour) light mode gets a light fill and a
-    // soft ink outline instead of the dark-design black fill.
-    final onSurface = color == null;
     final ink = color ?? (light ? AppColors.fg.withValues(alpha: 0.35) : const Color(0xFF404040));
-    final fill = onSurface && light ? AppColors.figmaSurface : Colors.black; // the SVG carries the 75% opacity
-    return SizedBox(
-      width: 16.87,
-      height: 23,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          if (filled)
-            Positioned(
-              left: 0,
-              top: 1,
-              child: FigmaIcon(
-                AssetConstants.formatFileFill,
-                width: 16.5,
-                height: 21,
-                color: fill,
-              ),
-            ),
-          Positioned.fill(
-            child: FigmaIcon(AssetConstants.formatFileOutline, color: ink),
-          ),
-          Positioned(
-            left: 8.38,
-            top: 0.36,
-            child: FigmaIcon(
-              AssetConstants.formatFileFold,
-              width: 8.0,
-              height: 7.14,
-              color: ink,
-            ),
-          ),
-          Positioned(
-            left: -6,
-            right: -6,
-            top: 11,
-            child: Text(
-              format.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.sora(
-                fontSize: 7,
-                height: 1,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.14,
-                color: labelColor ?? ink,
-              ),
-            ),
-          ),
-        ],
+    return Text(
+      format.toUpperCase(),
+      style: GoogleFonts.sora(
+        fontSize: UIConstants.tagFontSize,
+        height: 1,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
+        color: labelColor ?? ink,
       ),
     );
   }

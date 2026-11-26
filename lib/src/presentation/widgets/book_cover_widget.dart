@@ -151,8 +151,8 @@ class BookCoverWidget extends StatelessWidget {
                   Positioned.fill(child: _CoverImage(bytes: snapshot.data!)),
                   if (showFormatBadge)
                     Positioned(
-                      left: 8,
-                      top: 7,
+                      right: 8,
+                      bottom: 7,
                       child: FormatBadge(format: book.format, color: Colors.white),
                     ),
                 ],
@@ -162,15 +162,13 @@ class BookCoverWidget extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.all(12),
               child: Stack(
-                // The format glyph sits just outside the padding (-4,-5) so it
-                // lines up with the image covers' badge at (8,7).
+                // The label sits just outside the padding (-4,-5) so it lines
+                // up with the image covers' badge at (8,7) from the bottom.
                 clipBehavior: Clip.none,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Clear the format glyph pinned at the top-left.
-                      if (showFormatBadge) const SizedBox(height: 22),
                       Text(
                         book.publication.metadata.title,
                         maxLines: 3,
@@ -196,8 +194,8 @@ class BookCoverWidget extends StatelessWidget {
                   ),
                   if (showFormatBadge)
                     Positioned(
-                      left: -4,
-                      top: -5,
+                      right: -4,
+                      bottom: -5,
                       child: FormatBadge(format: book.format, color: Colors.white),
                     ),
                 ],

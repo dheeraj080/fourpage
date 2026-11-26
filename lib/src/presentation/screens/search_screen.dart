@@ -186,7 +186,6 @@ class _SearchScreenState extends State<SearchScreen> {
                               format: book.format,
                               color: AppColors.fg.withValues(alpha: 0.1),
                               labelColor: AppColors.figmaTextFaint,
-                              filled: false,
                             ),
                             onTap: () => _openReader(book),
                             onLongPress: () => showBookActions(context, book, onOpen: () => _openReader(book)),

@@ -6,6 +6,10 @@ All notable changes to Fourpage. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Book covers and rows now show a small "PDF" or "EPUB" text label instead of
+  the large file glyph; on covers the label sits in the bottom-right corner.
+
 ## [1.0.9] - 2026-10-28
 
 ### Fixed

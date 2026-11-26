@@ -6,6 +6,12 @@ All notable changes to Fourpage. The format follows
 
 ## [Unreleased]
 
+## [1.0.11] - 2026-11-26
+
+### Added
+- PDF books now show a cover generated from their first page instead of a
+  plain gradient placeholder.
+
 ### Changed
 - Book covers and rows now show a small "PDF" or "EPUB" text label instead of
   the large file glyph; on covers the label sits in the bottom-right corner.

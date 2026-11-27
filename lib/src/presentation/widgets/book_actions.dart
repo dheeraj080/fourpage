@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../data/importers/document_converter.dart';
 import '../layout/adaptive_sheet.dart';
 import '../state/library_controller.dart';
 import '../theme/app_colors.dart';
@@ -105,11 +106,71 @@ Future<void> showBookInfoSheet(BuildContext context, BookItem book) {
     isScrollControlled: true,
     backgroundColor: AppColors.sheetSurface,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-    builder: (sheetContext) => ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.85),
-      child: SafeArea(top: false, child: _BookInfo(book: book)),
+    builder: (sheetContext) => AnimatedBuilder(
+      animation: _lib,
+      builder: (infoContext, _) {
+        final current = _lib.bookById(book.publication.id) ?? book;
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(infoContext).height * 0.85),
+          child: SafeArea(top: false, child: _BookInfo(book: current)),
+        );
+      },
     ),
   );
+}
+
+/// Lets the user override the stored title for any book, PDF or EPUB. The
+/// override follows the publication ID, so re-opening the book can't restore
+/// the original embedded metadata title.
+Future<void> showRenameBookDialog(BuildContext context, BookItem book) async {
+  final controller = TextEditingController(text: book.publication.metadata.title);
+  var invalid = false;
+  final title = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (context, setState) {
+        void submit() {
+          final cleaned = DocumentConverter.cleanTitle(controller.text);
+          if (cleaned.isEmpty) {
+            setState(() => invalid = true);
+            return;
+          }
+          Navigator.of(dialogContext).pop(cleaned);
+        }
+
+        return AlertDialog(
+          backgroundColor: AppColors.sheetSurface,
+          title: Text(l10n.renameBook, style: GoogleFonts.sora(color: AppColors.fg, fontSize: 18)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLines: 1,
+            maxLength: 120,
+            style: GoogleFonts.sora(color: AppColors.fg, fontSize: 15),
+            decoration: InputDecoration(
+              labelText: l10n.bookTitle,
+              errorText: invalid ? l10n.titleCannotBeEmpty : null,
+            ),
+            onChanged: (_) {
+              if (invalid) setState(() => invalid = false);
+            },
+            onSubmitted: (_) => submit(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(onPressed: submit, child: Text(l10n.save)),
+          ],
+        );
+      },
+    ),
+  );
+  controller.dispose();
+  if (title == null) return;
+  await _lib.renameBook(book.publication.id, title);
+  if (context.mounted) _snack(context, l10n.renamedBookTo(title));
 }
 
 class _BookInfo extends StatelessWidget {
@@ -156,9 +217,28 @@ class _BookInfo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SelectableText(
-                      meta.title,
-                      style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w600, height: 1.3, color: AppColors.fg),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: SelectableText(
+                            meta.title,
+                            style: GoogleFonts.sora(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                              color: AppColors.fg,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: l10n.renameBook,
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          visualDensity: VisualDensity.compact,
+                          color: AppColors.fgMuted,
+                          onPressed: () => showRenameBookDialog(context, book),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Text(

@@ -33,6 +33,31 @@ class Publication {
     this.derivedStatistics = const DerivedStatistics(),
   });
 
+  Publication copyWith({
+    String? id,
+    String? fingerprint,
+    PublicationMetadata? metadata,
+    List<ManifestResource>? resources,
+    List<SpineItem>? spine,
+    TableOfContents? tableOfContents,
+    String? packagePath,
+    String? contentProtectionScheme,
+    RenditionInformation? rendition,
+    DerivedStatistics? derivedStatistics,
+  }) =>
+      Publication(
+        id: id ?? this.id,
+        fingerprint: fingerprint ?? this.fingerprint,
+        metadata: metadata ?? this.metadata,
+        resources: resources ?? this.resources,
+        spine: spine ?? this.spine,
+        tableOfContents: tableOfContents ?? this.tableOfContents,
+        packagePath: packagePath ?? this.packagePath,
+        contentProtectionScheme: contentProtectionScheme ?? this.contentProtectionScheme,
+        rendition: rendition ?? this.rendition,
+        derivedStatistics: derivedStatistics ?? this.derivedStatistics,
+      );
+
   bool get isProtected => contentProtectionScheme != null && contentProtectionScheme!.isNotEmpty;
 
   /// Looks up a manifest resource by its href string (normalized).

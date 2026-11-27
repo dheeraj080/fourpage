@@ -854,5 +854,16 @@
       }
     }
   },
-  "updateNotificationChannel": "App updates"
+  "updateNotificationChannel": "App updates",
+  "renameBook": "Rename book",
+  "bookTitle": "Title",
+  "titleCannotBeEmpty": "Enter a title",
+  "renamedBookTo": "Renamed to {title}",
+  "@renamedBookTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -1459,4 +1459,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateNotificationChannel => 'App updates';
+
+  @override
+  String get renameBook => 'Rename book';
+
+  @override
+  String get bookTitle => 'Title';
+
+  @override
+  String get titleCannotBeEmpty => 'Enter a title';
+
+  @override
+  String renamedBookTo(String title) {
+    return 'Renamed to $title';
+  }
 }

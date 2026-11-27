@@ -250,7 +250,7 @@ class _SavedScreenState extends State<SavedScreen> {
     }
 
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(22, 12, 21, browseBottomPadding(context, compact: 140)),
+      padding: EdgeInsets.fromLTRB(22, 12, 21, browseBottomPadding(context)),
       itemCount: quotes.length,
       separatorBuilder: (_, _) => Divider(height: 1, thickness: 1, color: AppColors.figmaDivider),
       itemBuilder: (context, index) {
@@ -303,7 +303,7 @@ class _SavedScreenState extends State<SavedScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, browseBottomPadding(context)),
       itemCount: bookmarks.length,
       itemBuilder: (context, index) {
         final item = bookmarks[index];
@@ -342,7 +342,7 @@ class _SavedScreenState extends State<SavedScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, browseBottomPadding(context)),
       itemCount: notes.length,
       itemBuilder: (context, index) {
         final item = notes[index];

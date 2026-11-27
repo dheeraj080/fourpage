@@ -242,7 +242,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         else
         Expanded(
           child: ListView.separated(
-            padding: EdgeInsets.fromLTRB(22, 20, 23, browseBottomPadding(context, compact: 140)),
+            padding: EdgeInsets.fromLTRB(22, 20, 23, browseBottomPadding(context)),
             itemCount: displayedBooks.length,
             separatorBuilder: (_, _) => const SizedBox(height: 22),
             itemBuilder: (context, index) {
@@ -294,7 +294,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           child: ListView(
             key: _shelvesListKey,
             controller: _shelvesScroll,
-            padding: EdgeInsets.fromLTRB(11, 6, 12, browseBottomPadding(context, compact: 140)),
+            padding: EdgeInsets.fromLTRB(11, 6, 12, browseBottomPadding(context)),
             children: [
               if (shelves.isEmpty)
                 Padding(
@@ -538,7 +538,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
 
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(22, 20, 23, browseBottomPadding(context, compact: 140)),
+      padding: EdgeInsets.fromLTRB(22, 20, 23, browseBottomPadding(context)),
       children: folderTiles,
     );
     return context.windowClass.isCompact ? list : MaxWidth(maxWidth: 900, child: list);

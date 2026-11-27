@@ -202,7 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         body: SafeArea(
           bottom: false,
           child: ListView(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, browseBottomPadding(context, compact: 150)),
+            padding: EdgeInsets.fromLTRB(20, 16, 20, browseBottomPadding(context)),
             children: [
               Row(
                 children: [

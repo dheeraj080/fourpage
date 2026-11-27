@@ -9,6 +9,7 @@ import '../../core/constants/asset_constants.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme_controller.dart';
 import '../layout/app_nav_rail.dart';
+import '../layout/browse_insets.dart';
 import '../platform/app_haptics.dart';
 import '../layout/window_class.dart';
 import '../widgets/app_chrome.dart';
@@ -112,14 +113,14 @@ class MainNavigationShellState extends State<MainNavigationShell> {
   // 25pt label pill 6pt above it, the whole thing 36pt off the bottom edge
   // over a 170pt fade to the page background.
   static const _pillWidth = 252.0;
-  static const _pillHeight = 68.0;
+  static const _pillHeight = compactNavPillHeight;
   static const _pillPadding = 8.0;
   static const _slotWidth = 55.0;
   static const _slotHeight = 54.0;
   static const _slotGap = 5.0;
-  static const _labelHeight = 25.0;
-  static const _labelGap = 6.0;
-  static const _bottomInset = 36.0;
+  static const _labelHeight = compactNavLabelHeight;
+  static const _labelGap = compactNavLabelGap;
+  static const _bottomInset = compactNavBottomInset;
   static const _animationDuration = Duration(milliseconds: 260);
 
   double _slotCenter(int index) =>
@@ -201,7 +202,7 @@ class MainNavigationShellState extends State<MainNavigationShell> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 170 + (bottom - _bottomInset),
+              height: compactNavClearance + 20 + (bottom - _bottomInset),
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: BoxDecoration(

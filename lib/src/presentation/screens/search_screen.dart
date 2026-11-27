@@ -163,7 +163,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         onSecondary: (b, _) => showBookActions(context, b, onOpen: () => _openReader(b)),
                       )
                     : ListView.separated(
-                        padding: EdgeInsets.fromLTRB(20, 0, 23, browseBottomPadding(context, compact: 140)),
+                        padding: EdgeInsets.fromLTRB(20, 0, 23, browseBottomPadding(context)),
                         itemCount: matchingBooks.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 22),
                         itemBuilder: (context, index) {

@@ -6,6 +6,13 @@ All notable changes to Fourpage. The format follows
 
 ## [Unreleased]
 
+## [1.0.14] - 2026-11-27
+
+### Fixed
+- PDF scrolling no longer stutters when crossing pages during a drag or fling.
+  Page changes now update only the page indicator instead of rebuilding the
+  reader and its visible page stack.
+
 ## [1.0.13] - 2026-11-27
 
 ### Added

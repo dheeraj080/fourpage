@@ -41,7 +41,14 @@ class _PdfReaderScreenState extends State<PdfReaderScreen>
   PdfDocumentHandle? _doc;
   Object? _error;
   bool _controlsVisible = true;
-  int _currentPage = 0;
+
+  // Page changes happen on every transform frame while scrolling. Keep them
+  // in a small notifier so the page label rebuilds without rebuilding the
+  // InteractiveViewer and its whole page stack mid-gesture.
+  final ValueNotifier<int> _pageNotifier = ValueNotifier<int>(0);
+  int get _currentPage => _pageNotifier.value;
+  set _currentPage(int value) => _pageNotifier.value = value;
+
   Timer? _saveDebounce;
 
   // One zoom/pan surface for the whole document: pinch to zoom, drag in
@@ -110,6 +117,7 @@ class _PdfReaderScreenState extends State<PdfReaderScreen>
   void dispose() {
     _saveDebounce?.cancel();
     _save();
+    _pageNotifier.dispose();
     _transform.dispose();
     _zoomAnim.dispose();
     _doc?.close();
@@ -171,9 +179,12 @@ class _PdfReaderScreenState extends State<PdfReaderScreen>
     // The page under the top third of the screen is "current".
     final page = _pageAt(view.top + view.height / 3);
     if (page != _currentPage) {
+      _currentPage = page;
+      // Keep the cache bounded without tearing down the reader tree; the old
+      // setState here rebuilt the top bar (with its new semantics node) and
+      // the InteractiveViewer on every page crossing during a fling.
       _cache.removeWhere((k, _) => (k - page).abs() > 6);
       _hiCache.removeWhere((k, _) => (k.$1 - page).abs() > 2);
-      setState(() => _currentPage = page);
       _saveDebounce?.cancel();
       _saveDebounce = Timer(const Duration(milliseconds: 800), _save);
     }
@@ -354,16 +365,14 @@ class _PdfReaderScreenState extends State<PdfReaderScreen>
                               color: AppColors.fg,
                             ),
                           ),
-                          Text(
-                            _doc == null
-                                ? 'PDF'
-                                : l10n.pageOf(
-                                    _currentPage + 1,
-                                    _doc!.pageCount,
-                                  ),
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
-                              color: AppColors.figmaTextFaint,
+                          ValueListenableBuilder<int>(
+                            valueListenable: _pageNotifier,
+                            builder: (context, page, _) => Text(
+                              _doc == null ? 'PDF' : l10n.pageOf(page + 1, _doc!.pageCount),
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                color: AppColors.figmaTextFaint,
+                              ),
                             ),
                           ),
                         ],

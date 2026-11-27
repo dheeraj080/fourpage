@@ -84,7 +84,9 @@ jobs:
         run: flutter test
 
       - name: Build GitHub APKs
-        run: flutter build apk --release --flavor github --split-per-abi
+        run: >-
+          flutter build apk --release --flavor github --split-per-abi
+          --obfuscate --split-debug-info=build/symbols
 
       - name: Name the files
         run: |

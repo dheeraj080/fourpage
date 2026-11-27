@@ -219,7 +219,7 @@ class AppText {
     fontSize: 17,
     height: 18 / 17,
     letterSpacing: -0.34,
-    color: AppColors.figmaTextGhost,
+    color: AppColors.figmaTextFaint,
   );
 
   static TextStyle get searchInput =>
@@ -383,8 +383,7 @@ class FormatBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final light = AppThemeController.instance.isLight;
-    final ink = color ?? (light ? AppColors.fg.withValues(alpha: 0.35) : const Color(0xFF404040));
+    final ink = color ?? AppColors.fgSubtle;
     return Text(
       format.toUpperCase(),
       style: GoogleFonts.sora(

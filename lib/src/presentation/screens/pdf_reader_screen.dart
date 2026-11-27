@@ -332,10 +332,11 @@ class _PdfReaderScreenState extends State<PdfReaderScreen>
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 15, 10),
                   child: SegmentedTopBar(
-                    leading: const FigmaIcon(
+                    leading: FigmaIcon(
                       AssetConstants.iconBack,
                       width: 9,
                       height: 14,
+                      semanticLabel: l10n.goBack,
                     ),
                     onLeadingTap: () => Navigator.of(context).pop(),
                     middle: Padding(

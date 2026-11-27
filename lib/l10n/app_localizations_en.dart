@@ -1459,4 +1459,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateNotificationChannel => 'App updates';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get highlightColor => 'Highlight colour';
+
+  @override
+  String get highlightYellow => 'Yellow highlight';
+
+  @override
+  String get highlightGreen => 'Green highlight';
+
+  @override
+  String get highlightRed => 'Red highlight';
+
+  @override
+  String get highlightBlue => 'Blue highlight';
+
+  @override
+  String get highlightPurple => 'Purple highlight';
 }

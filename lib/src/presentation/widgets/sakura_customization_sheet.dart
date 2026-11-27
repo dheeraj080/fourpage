@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/asset_constants.dart';
 import '../../data/engine/sakura_fonts.dart';
 import '../../domain/entities/reader_preferences.dart';
-import '../theme/app_colors.dart';
+import '../theme/reader_colors.dart';
 import 'app_chrome.dart';
 
 /// Appearance controls for the sakura_epub-backed reader, laid out like the
@@ -15,6 +15,7 @@ import 'app_chrome.dart';
 /// dimming overlay for brightness.
 class SakuraCustomizationSheet extends StatefulWidget {
   final ReaderPreferences preferences;
+  final ReaderTheme theme;
   final ValueChanged<ReaderPreferences> onChanged;
 
   /// 0..1 - 1 is full brightness (no dimming).
@@ -28,6 +29,7 @@ class SakuraCustomizationSheet extends StatefulWidget {
   const SakuraCustomizationSheet({
     super.key,
     required this.preferences,
+    required this.theme,
     required this.onChanged,
     required this.brightness,
     required this.onBrightnessChanged,
@@ -42,9 +44,10 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
   late ReaderPreferences _prefs;
   late double _brightness;
 
-  static Color get _sheetColor => AppColors.figmaSurface;
-  static Color get _boxColor => AppColors.figmaReaderBackground;
-  static Color get _trackColor => AppColors.figmaTextGhost;
+  ReaderColors get _colors => ReaderColors(widget.theme);
+  Color get _sheetColor => _colors.sheet;
+  Color get _boxColor => _colors.control;
+  Color get _trackColor => _colors.grip;
   static const _defaults = ReaderPreferences();
 
   // Line spacing steps shown as 01..05 in the sheet.
@@ -91,7 +94,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
     return best;
   }
 
-  TextStyle get _label => GoogleFonts.sora(fontSize: 17, height: 14 / 17, letterSpacing: -0.34, color: AppColors.fg);
+  TextStyle get _label => GoogleFonts.sora(fontSize: 17, height: 14 / 17, letterSpacing: -0.34, color: _colors.ink);
 
   @override
   Widget build(BuildContext context) {
@@ -122,13 +125,21 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
                   Expanded(
                     child: Text(
                       l10n.themingCustomization,
-                      style: GoogleFonts.sora(fontSize: 20, letterSpacing: -0.4, color: AppColors.fg),
+                      style: GoogleFonts.sora(fontSize: 20, letterSpacing: -0.4, color: _colors.ink),
                     ),
                   ),
                   if (!widget.embedded)
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const FigmaIcon(AssetConstants.iconCloseCircle, width: 48, height: 48),
+                  Semantics(
+                    button: true,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: FigmaIcon(
+                        AssetConstants.iconCloseCircle,
+                        width: 48,
+                        height: 48,
+                        semanticLabel: l10n.close,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -166,7 +177,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
                         fontFamily: font.flutterFontFamily,
                         package: SakuraFonts.package,
                         fontSize: 18,
-                        color: AppColors.fg,
+                        color: _colors.ink,
                       ),
                     ),
                   ),
@@ -212,7 +223,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
                               asset,
                               width: 22,
                               height: 22,
-                              color: _prefs.textAlignment == value ? AppColors.fg : AppColors.figmaTextFaint,
+                              color: _prefs.textAlignment == value ? _colors.ink : _colors.faintText,
                             ),
                           ),
                         ),
@@ -271,6 +282,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
               const SizedBox(height: 20),
               _BrightnessSlider(
                 value: _brightness,
+                fillColor: _colors.ink,
                 trackColor: _trackColor,
                 onChanged: (v) {
                   setState(() => _brightness = v);
@@ -287,7 +299,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
 
   Widget _divider({double top = 0}) => Padding(
         padding: EdgeInsets.only(top: top, bottom: 18),
-        child: Divider(height: 1, thickness: 1, color: AppColors.figmaDivider),
+        child: Divider(height: 1, thickness: 1, color: _colors.divider),
       );
 
   /// Five 67x33 boxes spread across the sheet (14pt gaps at the design width).
@@ -313,7 +325,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
           color: color,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: selected ? AppColors.figmaLime : Colors.transparent,
+            color: selected ? _colors.accent : Colors.transparent,
             width: 1.5,
           ),
         ),
@@ -332,11 +344,11 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: selected ? AppColors.figmaLime : AppColors.fg.withValues(alpha: 0.6),
+            color: selected ? _colors.accent : _colors.faintText,
             width: selected ? 1.5 : 1,
           ),
         ),
-        child: Text('+', style: GoogleFonts.sora(fontSize: 13, height: 1, color: AppColors.fg)),
+        child: Text('+', style: GoogleFonts.sora(fontSize: 13, height: 1, color: _colors.ink)),
       ),
     );
   }
@@ -360,7 +372,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
                 AssetConstants.iconTriangleDown,
                 width: 15,
                 height: 9,
-                color: onTap == null ? AppColors.figmaTextFaint : AppColors.fg,
+                color: onTap == null ? _colors.faintText : _colors.ink,
               ),
             ),
           ),
@@ -380,9 +392,9 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
               style: GoogleFonts.sora(
                 fontSize: 17,
                 height: 14 / 17,
-                color: AppColors.figmaTextFaint,
+                color: _colors.faintText,
                 decoration: TextDecoration.underline,
-                decorationColor: AppColors.figmaTextFaint,
+                decorationColor: _colors.faintText,
               ),
             ),
           ),
@@ -394,7 +406,7 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
               AssetConstants.iconReset,
               width: 18,
               height: 18,
-              color: isDefault ? AppColors.figmaTextFaint : AppColors.fg,
+              color: isDefault ? _colors.faintText : _colors.ink,
             ),
           ),
         ],
@@ -414,11 +426,11 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
         decoration: BoxDecoration(
           color: _boxColor,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: selected ? AppColors.figmaLime : Colors.transparent, width: 1.5),
+          border: Border.all(color: selected ? _colors.accent : Colors.transparent, width: 1.5),
         ),
         child: Text(
           label,
-          style: GoogleFonts.sora(fontSize: 13, color: selected ? AppColors.fg : AppColors.figmaTextFaint),
+          style: GoogleFonts.sora(fontSize: 13, color: selected ? _colors.ink : _colors.faintText),
         ),
       ),
     );
@@ -444,11 +456,11 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
                     fontFamily: font.flutterFontFamily,
                     package: SakuraFonts.package,
                     fontSize: 17,
-                    color: AppColors.fg,
+                    color: _colors.ink,
                   ),
                 ),
                 trailing: _activeFont == font.flutterFontFamily
-                    ? Icon(Icons.check_rounded, color: AppColors.figmaLime)
+                    ? Icon(Icons.check_rounded, color: _colors.accent)
                     : null,
               ),
             const SizedBox(height: 12),
@@ -464,10 +476,16 @@ class _SakuraCustomizationSheetState extends State<SakuraCustomizationSheet> {
 /// #474746 remainder, all 13pt tall.
 class _BrightnessSlider extends StatelessWidget {
   final double value;
+  final Color fillColor;
   final Color trackColor;
   final ValueChanged<double> onChanged;
 
-  const _BrightnessSlider({required this.value, required this.trackColor, required this.onChanged});
+  const _BrightnessSlider({
+    required this.value,
+    required this.fillColor,
+    required this.trackColor,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -492,7 +510,7 @@ class _BrightnessSlider extends StatelessWidget {
                   width: (x - gap).clamp(0.0, width),
                   height: 13,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: AppColors.fg, borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: fillColor, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
                 Positioned(
@@ -508,7 +526,7 @@ class _BrightnessSlider extends StatelessWidget {
                   width: handle,
                   height: 19,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: AppColors.fg, borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: fillColor, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
               ],

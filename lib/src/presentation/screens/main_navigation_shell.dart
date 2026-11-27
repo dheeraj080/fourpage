@@ -249,14 +249,18 @@ class MainNavigationShellState extends State<MainNavigationShell> {
                                 widthFactor: 1,
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 180),
-                                  child: Text(
-                                    _tabs[_currentIndex].label,
-                                    key: ValueKey(_currentIndex),
-                                    style: GoogleFonts.sora(
-                                      fontSize: 13,
-                                      height: 1,
-                                      letterSpacing: -0.26,
-                                      color: AppColors.figmaTextFaint,
+                                  // The pill below owns the accessible name
+                                  // and selected state for each destination.
+                                  child: ExcludeSemantics(
+                                    child: Text(
+                                      _tabs[_currentIndex].label,
+                                      key: ValueKey(_currentIndex),
+                                      style: GoogleFonts.sora(
+                                        fontSize: 13,
+                                        height: 1,
+                                        letterSpacing: -0.26,
+                                        color: AppColors.figmaTextFaint,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -305,23 +309,28 @@ class MainNavigationShellState extends State<MainNavigationShell> {
                                   top: (_pillHeight - 2 - _slotHeight) / 2,
                                   width: _slotWidth,
                                   height: _slotHeight,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => _selectTab(i),
-                                    child: Center(
-                                      child: AnimatedSwitcher(
-                                        duration: const Duration(
-                                          milliseconds: 180,
-                                        ),
-                                        child: FigmaIcon(
-                                          i == _currentIndex
-                                              ? _tabs[i].activeIcon
-                                              : _tabs[i].icon,
-                                          key: ValueKey(
-                                            '${i}_${i == _currentIndex}',
+                                  child: Semantics(
+                                    button: true,
+                                    selected: i == _currentIndex,
+                                    label: _tabs[i].label,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => _selectTab(i),
+                                      child: Center(
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(
+                                            milliseconds: 180,
                                           ),
-                                          width: _tabs[i].size.width,
-                                          height: _tabs[i].size.height,
+                                          child: FigmaIcon(
+                                            i == _currentIndex
+                                                ? _tabs[i].activeIcon
+                                                : _tabs[i].icon,
+                                            key: ValueKey(
+                                              '${i}_${i == _currentIndex}',
+                                            ),
+                                            width: _tabs[i].size.width,
+                                            height: _tabs[i].size.height,
+                                          ),
                                         ),
                                       ),
                                     ),

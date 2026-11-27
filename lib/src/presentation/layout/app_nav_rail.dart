@@ -90,44 +90,49 @@ class AppNavRail extends StatelessWidget {
       height: d.size.height * 0.86,
       color: active ? ink : null,
     );
-    return Tooltip(
-      message: extended ? '' : d.label,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => onSelected(i),
-          child: AnimatedContainer(
-            key: ValueKey('nav-item-$i'),
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            height: 48,
-            width: extended ? null : 56,
-            padding: EdgeInsets.symmetric(horizontal: extended ? 14 : 0),
-            decoration: BoxDecoration(
-              color: active ? AppColors.figmaLime : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: extended
-                ? Row(
-                    children: [
-                      SizedBox(width: 24, child: Center(child: icon)),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          d.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.sora(
-                            fontSize: 14,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                            color: active ? ink : AppColors.figmaTextFaint,
+    return Semantics(
+      button: true,
+      selected: active,
+      label: d.label,
+      child: Tooltip(
+        message: extended ? '' : d.label,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => onSelected(i),
+            child: AnimatedContainer(
+              key: ValueKey('nav-item-$i'),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              height: 48,
+              width: extended ? null : 56,
+              padding: EdgeInsets.symmetric(horizontal: extended ? 14 : 0),
+              decoration: BoxDecoration(
+                color: active ? AppColors.figmaLime : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: extended
+                  ? Row(
+                      children: [
+                        SizedBox(width: 24, child: Center(child: icon)),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(
+                            d.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.sora(
+                              fontSize: 14,
+                              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                              color: active ? ink : AppColors.figmaTextFaint,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                : Center(child: icon),
+                      ],
+                    )
+                  : Center(child: icon),
+            ),
           ),
         ),
       ),

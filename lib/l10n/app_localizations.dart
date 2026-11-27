@@ -2499,6 +2499,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App updates'**
   String get updateNotificationChannel;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @highlightColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight colour'**
+  String get highlightColor;
+
+  /// No description provided for @highlightYellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow highlight'**
+  String get highlightYellow;
+
+  /// No description provided for @highlightGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green highlight'**
+  String get highlightGreen;
+
+  /// No description provided for @highlightRed.
+  ///
+  /// In en, this message translates to:
+  /// **'Red highlight'**
+  String get highlightRed;
+
+  /// No description provided for @highlightBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue highlight'**
+  String get highlightBlue;
+
+  /// No description provided for @highlightPurple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple highlight'**
+  String get highlightPurple;
 }
 
 class _AppLocalizationsDelegate

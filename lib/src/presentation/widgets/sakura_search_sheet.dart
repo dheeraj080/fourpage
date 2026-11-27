@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
-import '../theme/app_colors.dart';
+import '../../domain/entities/reader_preferences.dart';
+import '../theme/reader_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sakura_epub/sakura_epub.dart';
 
@@ -9,12 +10,14 @@ import 'package:sakura_epub/sakura_epub.dart';
 /// separate parsing pipeline needed).
 class SakuraSearchSheet extends StatefulWidget {
   final EpubController controller;
+  final ReaderTheme theme;
   final ValueChanged<String> onNavigateToCfi;
   final String? initialQuery;
 
   const SakuraSearchSheet({
     super.key,
     required this.controller,
+    required this.theme,
     required this.onNavigateToCfi,
     this.initialQuery,
   });
@@ -61,10 +64,11 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ReaderColors(widget.theme);
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
       decoration: BoxDecoration(
-        color: AppColors.figmaSurface,
+        color: colors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -78,7 +82,7 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(top: 10, bottom: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.fg.withValues(alpha: 0.2),
+                  color: colors.grip,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -91,11 +95,11 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
-                      style: GoogleFonts.sora(fontSize: 16, color: AppColors.fg),
+                      style: GoogleFonts.sora(fontSize: 16, color: colors.ink),
                       onSubmitted: _runSearch,
                       decoration: InputDecoration(
                         hintText: l10n.searchInBook,
-                        hintStyle: GoogleFonts.sora(fontSize: 16, color: AppColors.textFaint),
+                        hintStyle: GoogleFonts.sora(fontSize: 16, color: colors.faintText),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -104,7 +108,7 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
                   ),
                   if (_searchController.text.isNotEmpty)
                     IconButton(
-                      icon: Icon(Icons.close, color: AppColors.fgMuted, size: 20),
+                      icon: Icon(Icons.close, color: colors.muted, size: 20),
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _results = []);
@@ -113,16 +117,20 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
                 ],
               ),
             ),
-            Divider(color: AppColors.dividerSubtle, height: 1, thickness: 1),
+            Divider(color: colors.divider, height: 1, thickness: 1),
             if (_searchController.text.isNotEmpty && !_isSearching)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
                   l10n.searchResultsCount(_results.length),
-                  style: GoogleFonts.sora(fontSize: 13, color: AppColors.textFaint),
+                  style: GoogleFonts.sora(fontSize: 13, color: colors.faintText),
                 ),
               ),
-            if (_isSearching) const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+            if (_isSearching)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator(color: colors.accent)),
+              ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -135,7 +143,7 @@ class _SakuraSearchSheetState extends State<SakuraSearchSheet> {
                       r.excerpt,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.sora(fontSize: 14, color: AppColors.fg),
+                      style: GoogleFonts.sora(fontSize: 14, color: colors.ink),
                     ),
                     onTap: () {
                       Navigator.of(context).pop();

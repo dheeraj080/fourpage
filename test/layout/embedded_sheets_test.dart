@@ -38,7 +38,12 @@ void main() {
     String? went;
     await _pumpPane(
       tester,
-      SakuraTocSheet(chapters: _chapters, onNavigateToHref: (h) => went = h, embedded: true),
+      SakuraTocSheet(
+        theme: ReaderTheme.light,
+        chapters: _chapters,
+        onNavigateToHref: (h) => went = h,
+        embedded: true,
+      ),
       width: 300,
     );
     expect(tester.takeException(), isNull);
@@ -76,6 +81,7 @@ void main() {
       tester,
       SakuraCustomizationSheet(
         preferences: const ReaderPreferences(),
+        theme: ReaderTheme.light,
         onChanged: (_) {},
         brightness: 1,
         onBrightnessChanged: (_) {},

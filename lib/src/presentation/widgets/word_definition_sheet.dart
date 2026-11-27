@@ -3,16 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../data/dictionary/dictionary_service.dart';
-import '../theme/app_colors.dart';
+import '../../domain/entities/reader_preferences.dart';
+import '../theme/reader_colors.dart';
 
 /// Bottom sheet that looks up the selected word and shows its meanings.
 class WordDefinitionSheet extends StatefulWidget {
   final String word;
+  final ReaderTheme theme;
 
   /// Opens in-book search for the word (offered when there's no definition).
   final VoidCallback? onSearchInBook;
 
-  const WordDefinitionSheet({super.key, required this.word, this.onSearchInBook});
+  const WordDefinitionSheet({
+    super.key,
+    required this.word,
+    required this.theme,
+    this.onSearchInBook,
+  });
 
   @override
   State<WordDefinitionSheet> createState() => _WordDefinitionSheetState();
@@ -20,6 +27,7 @@ class WordDefinitionSheet extends StatefulWidget {
 
 class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
   late Future<WordDefinition> _lookup;
+  ReaderColors get _colors => ReaderColors(widget.theme);
 
   @override
   void initState() {
@@ -34,7 +42,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
     final maxHeight = MediaQuery.of(context).size.height * 0.6;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.figmaSurface,
+        color: _colors.sheet,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
@@ -51,7 +59,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                   width: 75,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: AppColors.figmaTextGhost,
+                    color: _colors.grip,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -70,7 +78,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                             child: SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentLime),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: _colors.accent),
                             ),
                           ),
                         ),
@@ -98,10 +106,10 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(word, style: GoogleFonts.sora(fontSize: 24, color: AppColors.fg, fontWeight: FontWeight.w600)),
+          Text(word, style: GoogleFonts.sora(fontSize: 24, color: _colors.ink, fontWeight: FontWeight.w600)),
           if (phonetic != null) ...[
             const SizedBox(height: 4),
-            Text(phonetic, style: GoogleFonts.sora(fontSize: 14, color: AppColors.figmaTextFaint)),
+            Text(phonetic, style: GoogleFonts.sora(fontSize: 14, color: _colors.faintText)),
           ],
           child,
         ],
@@ -117,7 +125,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
         children: [
           Text(
             offline ? l10n.dictionaryOffline : l10n.noDefinitionFound,
-            style: GoogleFonts.sora(fontSize: 14, height: 1.5, color: AppColors.fgMuted),
+            style: GoogleFonts.sora(fontSize: 14, height: 1.5, color: _colors.muted),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -148,7 +156,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                 style: GoogleFonts.sora(
                   fontSize: 13,
                   fontStyle: FontStyle.italic,
-                  color: AppColors.accentLime,
+                  color: _colors.accent,
                 ),
               ),
             for (final (i, d) in sense.definitions.take(4).indexed)
@@ -156,7 +164,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   '${i + 1}. $d',
-                  style: GoogleFonts.sora(fontSize: 15, height: 1.5, color: AppColors.fg),
+                  style: GoogleFonts.sora(fontSize: 15, height: 1.5, color: _colors.ink),
                 ),
               ),
             if (sense.examples.isNotEmpty)
@@ -168,7 +176,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                     fontSize: 13,
                     height: 1.5,
                     fontStyle: FontStyle.italic,
-                    color: AppColors.figmaTextFaint,
+                    color: _colors.faintText,
                   ),
                 ),
               ),
@@ -177,7 +185,7 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   '${l10n.synonyms}: ${sense.synonyms.take(6).join(', ')}',
-                  style: GoogleFonts.sora(fontSize: 13, height: 1.5, color: AppColors.fgMuted),
+                  style: GoogleFonts.sora(fontSize: 13, height: 1.5, color: _colors.muted),
                 ),
               ),
           ],
@@ -192,18 +200,27 @@ class _WordDefinitionSheetState extends State<WordDefinitionSheet> {
 /// sheet.
 class WordDefinitionCard extends StatelessWidget {
   final String word;
+  final ReaderTheme theme;
 
   /// The lookup, held by the caller so rebuilds don't start a new request.
   final Future<WordDefinition> lookup;
   final VoidCallback? onExpand;
 
-  const WordDefinitionCard({super.key, required this.word, required this.lookup, this.onExpand});
+  ReaderColors get _colors => ReaderColors(theme);
+
+  const WordDefinitionCard({
+    super.key,
+    required this.word,
+    required this.theme,
+    required this.lookup,
+    this.onExpand,
+  });
 
   @override
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.of(context).size.height * 0.32;
     return Material(
-      color: AppColors.figmaSurface,
+      color: _colors.sheet,
       elevation: 8,
       shadowColor: Colors.black54,
       borderRadius: BorderRadius.circular(16),
@@ -228,12 +245,12 @@ class WordDefinitionCard extends StatelessWidget {
                           children: [
                             Text(
                               def?.word ?? word,
-                              style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.fg),
+                              style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w600, color: _colors.ink),
                             ),
                             if (def?.phonetic != null)
                               Text(
                                 def!.phonetic!,
-                                style: GoogleFonts.sora(fontSize: 12, color: AppColors.figmaTextFaint),
+                                style: GoogleFonts.sora(fontSize: 12, color: _colors.faintText),
                               ),
                           ],
                         ),
@@ -242,7 +259,7 @@ class WordDefinitionCard extends StatelessWidget {
                         IconButton(
                           visualDensity: VisualDensity.compact,
                           onPressed: onExpand,
-                          icon: Icon(Icons.open_in_full_rounded, size: 18, color: AppColors.fgSubtle),
+                          icon: Icon(Icons.open_in_full_rounded, size: 18, color: _colors.secondaryText),
                         ),
                     ],
                   ),
@@ -252,7 +269,7 @@ class WordDefinitionCard extends StatelessWidget {
                       child: SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentLime),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: _colors.accent),
                       ),
                     )
                   else if (snapshot.hasError)
@@ -263,7 +280,7 @@ class WordDefinitionCard extends StatelessWidget {
                                 (snapshot.error as DictionaryException).failure == DictionaryFailure.offline
                             ? l10n.dictionaryOffline
                             : l10n.noDefinitionFound,
-                        style: GoogleFonts.sora(fontSize: 13, height: 1.45, color: AppColors.fgMuted),
+                        style: GoogleFonts.sora(fontSize: 13, height: 1.45, color: _colors.muted),
                       ),
                     )
                   else
@@ -272,14 +289,14 @@ class WordDefinitionCard extends StatelessWidget {
                       if (sense.partOfSpeech.isNotEmpty)
                         Text(
                           sense.partOfSpeech,
-                          style: GoogleFonts.sora(fontSize: 12, fontStyle: FontStyle.italic, color: AppColors.accentLime),
+                          style: GoogleFonts.sora(fontSize: 12, fontStyle: FontStyle.italic, color: _colors.accent),
                         ),
                       for (final (i, d) in sense.definitions.take(3).indexed)
                         Padding(
                           padding: const EdgeInsets.only(top: 4, right: 8),
                           child: Text(
                             '${i + 1}: $d',
-                            style: GoogleFonts.sora(fontSize: 13, height: 1.45, color: AppColors.fg),
+                            style: GoogleFonts.sora(fontSize: 13, height: 1.45, color: _colors.ink),
                           ),
                         ),
                     ],

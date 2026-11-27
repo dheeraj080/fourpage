@@ -854,5 +854,12 @@
       }
     }
   },
-  "updateNotificationChannel": "App updates"
+  "updateNotificationChannel": "App updates",
+  "close": "Close",
+  "highlightColor": "Highlight colour",
+  "highlightYellow": "Yellow highlight",
+  "highlightGreen": "Green highlight",
+  "highlightRed": "Red highlight",
+  "highlightBlue": "Blue highlight",
+  "highlightPurple": "Purple highlight"
 }

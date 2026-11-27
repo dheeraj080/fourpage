@@ -2541,6 +2541,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purple highlight'**
   String get highlightPurple;
+
+  /// No description provided for @renameBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename book'**
+  String get renameBook;
+
+  /// No description provided for @bookTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get bookTitle;
+
+  /// No description provided for @titleCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title'**
+  String get titleCannotBeEmpty;
+
+  /// No description provided for @renamedBookTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Renamed to {title}'**
+  String renamedBookTo(String title);
 }
 
 class _AppLocalizationsDelegate

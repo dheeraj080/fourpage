@@ -861,5 +861,16 @@
   "highlightGreen": "Green highlight",
   "highlightRed": "Red highlight",
   "highlightBlue": "Blue highlight",
-  "highlightPurple": "Purple highlight"
+  "highlightPurple": "Purple highlight",
+  "renameBook": "Rename book",
+  "bookTitle": "Title",
+  "titleCannotBeEmpty": "Enter a title",
+  "renamedBookTo": "Renamed to {title}",
+  "@renamedBookTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

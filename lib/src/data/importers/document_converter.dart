@@ -41,10 +41,14 @@ class DocumentConverter {
     return dot == -1 ? '' : fileName.substring(dot + 1).toLowerCase();
   }
 
+  /// Normalizes a user-entered or filename-derived book title: one line,
+  /// single spaces, no leading/trailing whitespace.
+  static String cleanTitle(String title) => title.trim().replaceAll(RegExp(r'\s+'), ' ');
+
   static String titleFromFileName(String fileName) {
     final dot = fileName.lastIndexOf('.');
     final base = dot == -1 ? fileName : fileName.substring(0, dot);
-    return base.replaceAll(RegExp(r'[_]+'), ' ').trim();
+    return cleanTitle(base.replaceAll(RegExp(r'[_]+'), ' '));
   }
 
   static ConvertedDocument convert(String fileName, List<int> bytes) {

@@ -6,6 +6,24 @@ All notable changes to Fourpage. The format follows
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-11-27
+
+### Added
+- Book titles can be renamed in the app for both EPUB and PDF books. The
+  custom title follows the book across reopens and restarts without changing
+  the stored file, progress, highlights or bookmarks.
+
+### Changed
+- Reader sheets, search, definition cards and progress controls now follow the
+  active book theme instead of the app theme.
+- Icon-only navigation and reader controls now have accessibility labels and
+  selected states.
+
+### Fixed
+- Saved bookmark and note lists no longer sit under the floating bottom
+  navigation.
+- Faint hint and metadata text now meets AA contrast.
+
 ## [1.0.12] - 2026-11-27
 
 ### Changed

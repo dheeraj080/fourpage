@@ -38,6 +38,39 @@ class PublicationMetadata {
     this.accessibility = const AccessibilityMetadata(),
   });
 
+  PublicationMetadata copyWith({
+    String? title,
+    List<String>? authors,
+    List<Contributor>? contributors,
+    String? publisher,
+    String? language,
+    String? identifier,
+    List<String>? identifiers,
+    String? publicationDate,
+    String? description,
+    String? coverHref,
+    String? rights,
+    List<String>? subjects,
+    List<CollectionInfo>? collections,
+    AccessibilityMetadata? accessibility,
+  }) =>
+      PublicationMetadata(
+        title: title ?? this.title,
+        authors: authors ?? this.authors,
+        contributors: contributors ?? this.contributors,
+        publisher: publisher ?? this.publisher,
+        language: language ?? this.language,
+        identifier: identifier ?? this.identifier,
+        identifiers: identifiers ?? this.identifiers,
+        publicationDate: publicationDate ?? this.publicationDate,
+        description: description ?? this.description,
+        coverHref: coverHref ?? this.coverHref,
+        rights: rights ?? this.rights,
+        subjects: subjects ?? this.subjects,
+        collections: collections ?? this.collections,
+        accessibility: accessibility ?? this.accessibility,
+      );
+
   Map<String, dynamic> toJson() => {
         'title': title,
         'authors': authors,

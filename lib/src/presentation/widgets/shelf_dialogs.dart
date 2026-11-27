@@ -142,6 +142,7 @@ Future<void> showBookActions(BuildContext context, BookItem book, {required Void
     children: (pop) => [
       _sheetTile(Icons.menu_book_rounded, l10n.openBook, () => pop('open')),
       _sheetTile(Icons.info_outline_rounded, l10n.aboutThisBook, () => pop('info')),
+      _sheetTile(Icons.drive_file_rename_outline_rounded, l10n.renameBook, () => pop('rename')),
       _sheetTile(Icons.drive_file_move_outline, l10n.moveToShelf, () => pop('move')),
       if (current != null) _sheetTile(Icons.remove_circle_outline_rounded, l10n.removeFromShelf, () => pop('unshelve')),
       _sheetTile(Icons.ios_share_rounded, l10n.shareBookFile, () => pop('share')),
@@ -154,6 +155,8 @@ Future<void> showBookActions(BuildContext context, BookItem book, {required Void
       onOpen();
     case 'info':
       await showBookInfoSheet(context, book);
+    case 'rename':
+      await showRenameBookDialog(context, book);
     case 'move':
       await showMoveToShelfSheet(context, book);
     case 'unshelve':

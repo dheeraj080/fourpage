@@ -29,8 +29,8 @@ import '../state/app_preferences.dart';
 import '../state/reader_usage_mixin.dart';
 import '../state/library_controller.dart';
 import '../../core/constants/asset_constants.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_theme_controller.dart';
+import '../theme/reader_colors.dart';
 import '../layout/adaptive_sheet.dart';
 import '../layout/reader_pane_layout.dart';
 import '../widgets/app_chrome.dart';
@@ -232,10 +232,20 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
     '#9C27B0': Color(0xFF9C27B0), // purple
   };
 
+  static String _highlightColorLabel(String hex) => switch (hex) {
+        '#FFEB3B' => l10n.highlightYellow,
+        '#4CAF50' => l10n.highlightGreen,
+        '#F44336' => l10n.highlightRed,
+        '#2196F3' => l10n.highlightBlue,
+        '#9C27B0' => l10n.highlightPurple,
+        _ => l10n.highlightColor,
+      };
+
   bool get _paginated => _preferences.scrollMode == ScrollMode.paginated;
 
   /// The theme pages are shown in (the book's, or the app's with "Dynamic book background").
   ReaderTheme get _theme => AppPreferences.instance.effectiveReaderTheme(_preferences.theme);
+  ReaderColors get _rc => ReaderColors(_theme);
 
   // What the page was last laid out with, to notice app theme / setting changes from outside.
   String? _appliedLook;
@@ -764,6 +774,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => WordDefinitionSheet(
         word: word,
+        theme: _theme,
         onSearchInBook: () {
           Navigator.of(sheetContext).pop();
           _searchSelection(word);
@@ -860,8 +871,8 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
     final note = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.sheetSurface,
-        title: Text(l10n.addNote, style: TextStyle(color: AppColors.fg)),
+        backgroundColor: _rc.sheet,
+        title: Text(l10n.addNote, style: TextStyle(color: _rc.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,15 +881,15 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
               '"$text"',
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.sora(fontSize: 13, color: AppColors.textFaint, fontStyle: FontStyle.italic),
+              style: GoogleFonts.sora(fontSize: 13, color: _rc.faintText, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: noteController,
               autofocus: true,
               maxLines: 3,
-              style: TextStyle(color: AppColors.fg),
-              decoration: InputDecoration(hintText: l10n.writeANote, hintStyle: TextStyle(color: AppColors.fgFaint)),
+              style: TextStyle(color: _rc.ink),
+              decoration: InputDecoration(hintText: l10n.writeANote, hintStyle: TextStyle(color: _rc.faintText)),
             ),
           ],
         ),
@@ -952,7 +963,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         size.width - globalPosition.dx,
         size.height - globalPosition.dy,
       ),
-      color: AppColors.popoverSurface,
+      color: _rc.control,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       items: [
         PopupMenuItem<String>(
@@ -962,18 +973,23 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final e in _highlightColors.entries)
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop('color:${e.key}'),
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      color: e.value,
-                      shape: BoxShape.circle,
-                      border: e.key.toUpperCase() == annotation.colorHex.toUpperCase()
-                          ? Border.all(color: AppColors.fg, width: 2)
-                          : null,
+                Semantics(
+                  button: true,
+                  selected: e.key.toUpperCase() == annotation.colorHex.toUpperCase(),
+                  label: _highlightColorLabel(e.key),
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop('color:${e.key}'),
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      margin: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: e.value,
+                        shape: BoxShape.circle,
+                        border: e.key.toUpperCase() == annotation.colorHex.toUpperCase()
+                            ? Border.all(color: _rc.ink, width: 2)
+                            : null,
+                      ),
                     ),
                   ),
                 ),
@@ -985,9 +1001,9 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
           height: 46,
           child: Row(
             children: [
-              Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.fgMuted),
+              Icon(Icons.delete_outline_rounded, size: 18, color: _rc.muted),
               const SizedBox(width: 12),
-              Text(l10n.removeHighlight, style: GoogleFonts.sora(fontSize: 14, color: AppColors.fg)),
+              Text(l10n.removeHighlight, style: GoogleFonts.sora(fontSize: 14, color: _rc.ink)),
             ],
           ),
         ),
@@ -1914,12 +1930,13 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppColors.figmaReaderBackground,
-        border: Border(bottom: BorderSide(color: AppColors.dividerSubtle)),
+        color: _rc.page,
+        border: Border(bottom: BorderSide(color: _rc.divider)),
       ),
       child: Row(
         children: [
           IconButton(
+            tooltip: l10n.goBack,
             icon: const FigmaIcon(AssetConstants.iconBack, width: 9, height: 14),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -1933,33 +1950,33 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                   widget.book.publication.metadata.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: AppColors.fg),
+                  style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: _rc.ink),
                 ),
                 Text(
                   _chapterTitle('current') ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(fontSize: 13, height: 20 / 13, color: AppColors.figmaTextFaint),
+                  style: GoogleFonts.dmSans(fontSize: 13, height: 20 / 13, color: _rc.faintText),
                 ),
               ],
             ),
           ),
           IconButton(
             tooltip: l10n.searchInBook,
-            icon: Icon(Icons.search_rounded, color: AppColors.fg, size: 22),
+            icon: Icon(Icons.search_rounded, color: _rc.ink, size: 22),
             onPressed: _showSearchSheet,
           ),
           IconButton(
             tooltip: _bookmarksHere.isNotEmpty ? l10n.removeBookmark : l10n.bookmarkThisPage,
             icon: Icon(
               _bookmarksHere.isNotEmpty ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
-              color: _bookmarksHere.isNotEmpty ? AppColors.accentLime : AppColors.fg,
+              color: _bookmarksHere.isNotEmpty ? _rc.accent : _rc.ink,
               size: 22,
             ),
             onPressed: _toggleBookmark,
           ),
-          ReaderPaneToggles(color: AppColors.fg),
-          IconButton(icon: const _ReaderMenuGlyph(), onPressed: _showReaderMenu),
+          ReaderPaneToggles(color: _rc.ink),
+          IconButton(icon: _ReaderMenuGlyph(theme: _theme), onPressed: _showReaderMenu),
         ],
       ),
     );
@@ -1973,6 +1990,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraCustomizationSheet(
         preferences: _preferences,
+        theme: _theme,
         onChanged: _onPreferencesChanged,
         brightness: _brightness,
         onBrightnessChanged: (value) => setState(() => _brightness = value),
@@ -1998,6 +2016,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraTocSheet(
+        theme: _theme,
         currentHref: _currentChapterHref,
         chapters: _toc,
         notes: _session.state.annotations,
@@ -2019,6 +2038,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => NativeSearchSheet(
         engine: engine,
+        theme: _theme,
         initialQuery: initialQuery,
         onNavigate: (hit) => _goTo(engine.at(hit.resourceIndex, hit.start)),
       ),
@@ -2109,7 +2129,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                   child: _SelectionHandles(
                     rects: [for (final r in _selection!.rects) (_selectionMap ?? _toLogical)(r)],
                     showHandles: _paginated,
-                    color: AppColors.accentLime,
+                    color: _rc.accent,
                     onDragStart: (startHandle) {
                       final rects = _selection!.rects;
                       if (rects.isEmpty) return;
@@ -2198,6 +2218,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
           contents: ReaderFocusReturn(
             focusNode: _readerFocus,
             child: SakuraTocSheet(
+              theme: _theme,
               currentHref: _currentChapterHref,
               embedded: true,
               chapters: _toc,
@@ -2214,6 +2235,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
             child: SakuraCustomizationSheet(
               embedded: true,
               preferences: _preferences,
+              theme: _theme,
               onChanged: _onPreferencesChanged,
               brightness: _brightness,
               onBrightnessChanged: (value) => setState(() => _brightness = value),
@@ -2278,7 +2300,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
     final visible = _swipeDir != 0 && _swipeProgress > 0;
     final forward = _swipeDir >= 0;
     final appear = (_swipeProgress * 3).clamp(0.0, 1.0);
-    final accent = _swipeAvailable ? AppColors.accentLime : AppColors.fgFaint;
+    final accent = _swipeAvailable ? _rc.accent : _rc.faintText;
     final label = !_swipeAvailable
         ? (forward ? l10n.lastChapter : l10n.firstChapter)
         : _swipeArmed
@@ -2304,7 +2326,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _swipeArmed ? accent : AppColors.popoverSurface.withValues(alpha: 0.92),
+                    color: _swipeArmed ? accent : _rc.control.withValues(alpha: 0.92),
                     boxShadow: [
                       BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 14),
                     ],
@@ -2318,7 +2340,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                         child: CircularProgressIndicator(
                           value: _swipeProgress,
                           strokeWidth: 3,
-                          backgroundColor: AppColors.fg.withValues(alpha: 0.12),
+                          backgroundColor: _rc.ink.withValues(alpha: 0.12),
                           valueColor: AlwaysStoppedAnimation(
                             _swipeArmed ? Colors.transparent : accent,
                           ),
@@ -2329,7 +2351,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                             ? Icons.block_rounded
                             : (forward ? Icons.chevron_right_rounded : Icons.chevron_left_rounded),
                         size: 30,
-                        color: _swipeArmed ? Colors.black : accent,
+                        color: _swipeArmed ? _rc.onAccent : accent,
                       ),
                     ],
                   ),
@@ -2338,12 +2360,12 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverSurface.withValues(alpha: 0.92),
+                    color: _rc.control.withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     label,
-                    style: GoogleFonts.sora(fontSize: 11, color: AppColors.fgMuted),
+                    style: GoogleFonts.sora(fontSize: 11, color: _rc.muted),
                   ),
                 ),
               ],
@@ -2378,7 +2400,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         // it would otherwise show as a grey band under the progress bar.
         child: AnimatedContainer(
           duration: _chromeDuration,
-          color: _zoomed ? AppColors.overviewBackground : SakuraEpubMapper.pageColorFor(_theme),
+          color: _zoomed ? _rc.page : SakuraEpubMapper.pageColorFor(_theme),
           child: Align(
             alignment: Alignment.topCenter,
             // Hidden in the page overview (the dock shows the same); back
@@ -2568,7 +2590,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         onHorizontalDragUpdate: !vertical && _zoomShrunk ? dragUpdate : null,
         onHorizontalDragEnd: !vertical && _zoomShrunk ? dragEnd : null,
         child: ColoredBox(
-          color: AppColors.overviewBackground,
+          color: _rc.page,
           child: ValueListenableBuilder<double>(
             valueListenable: _chapterDragN,
             builder: (context, drag, _) {
@@ -2667,9 +2689,9 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: armed ? AppColors.accentLime.withValues(alpha: 0.9) : AppColors.figmaSurface,
+          color: armed ? _rc.accent.withValues(alpha: 0.9) : _rc.control,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.fg.withValues(alpha: 0.08)),
+          border: Border.all(color: _rc.ink.withValues(alpha: 0.08)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)],
         ),
         child: Row(
@@ -2678,7 +2700,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
             Icon(
               up ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: armed ? Colors.black : AppColors.fgSubtle,
+              color: armed ? _rc.onAccent : _rc.secondaryText,
             ),
             const SizedBox(width: 6),
             Flexible(
@@ -2688,13 +2710,16 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                 children: [
                   Text(
                     up ? l10n.previousChapter : l10n.nextChapter,
-                    style: GoogleFonts.sora(fontSize: 10, color: armed ? Colors.black54 : AppColors.fgSubtle),
+                    style: GoogleFonts.sora(
+                      fontSize: 10,
+                      color: armed ? _rc.onAccent.withValues(alpha: 0.72) : _rc.secondaryText,
+                    ),
                   ),
                   Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.sora(fontSize: 13, color: armed ? Colors.black : AppColors.fg),
+                    style: GoogleFonts.sora(fontSize: 13, color: armed ? _rc.onAccent : _rc.ink),
                   ),
                 ],
               ),
@@ -2715,12 +2740,12 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, color: AppColors.fgFaint, size: 40),
+            Icon(Icons.error_outline_rounded, color: _rc.faintText, size: 40),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.sora(color: AppColors.fgMuted, fontSize: 14),
+              style: GoogleFonts.sora(color: _rc.muted, fontSize: 14),
             ),
             const SizedBox(height: 20),
             TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.goBack)),
@@ -2741,18 +2766,18 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.popoverSurface,
+            color: _rc.control,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.fg.withValues(alpha: 0.12)),
+            border: Border.all(color: _rc.ink.withValues(alpha: 0.12)),
           ),
           child: Row(
             children: [
-              Icon(Icons.hourglass_empty_rounded, color: AppColors.fgSubtle, size: 18),
+              Icon(Icons.hourglass_empty_rounded, color: _rc.secondaryText, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   l10n.stillOpeningThisBook,
-                  style: GoogleFonts.sora(color: AppColors.fgMuted, fontSize: 13),
+                  style: GoogleFonts.sora(color: _rc.muted, fontSize: 13),
                 ),
               ),
               TextButton(
@@ -2806,13 +2831,18 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
       right: 0,
       child: Container(
         key: _topBarKey,
-        color: AppColors.overviewBackground,
+        color: _rc.page,
         child: SafeArea(
           bottom: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 15, 10),
             child: SegmentedTopBar(
-              leading: const FigmaIcon(AssetConstants.iconBack, width: 9, height: 14),
+              leading: FigmaIcon(
+                AssetConstants.iconBack,
+                width: 9,
+                height: 14,
+                semanticLabel: l10n.goBack,
+              ),
               onLeadingTap: () => Navigator.of(context).pop(),
               middle: Padding(
                 padding: const EdgeInsets.only(left: 24, right: 12),
@@ -2824,7 +2854,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                       widget.book.publication.metadata.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: AppColors.fg),
+                      style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: _rc.ink),
                     ),
                     Text(
                       _chapterTitle('current') ?? '',
@@ -2833,14 +2863,14 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
                         height: 20 / 13,
-                        color: AppColors.figmaTextFaint,
+                        color: _rc.faintText,
                       ),
                     ),
                   ],
                 ),
               ),
               onMiddleTap: _showTocSheet,
-              trailing: const _ReaderMenuGlyph(),
+              trailing: _ReaderMenuGlyph(theme: _theme),
               onTrailingTap: _showReaderMenu,
             ),
           ),
@@ -2855,7 +2885,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
     final choice = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(media.size.width - 220, media.padding.top + 80, 15, 0),
-      color: AppColors.figmaSurface,
+      color: _rc.control,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       items: [
         for (final (value, label) in [
@@ -2868,7 +2898,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
           PopupMenuItem<String>(
             value: value,
             height: 52,
-            child: Text(label, style: GoogleFonts.sora(fontSize: 16, color: AppColors.fg)),
+            child: Text(label, style: GoogleFonts.sora(fontSize: 16, color: _rc.ink)),
           ),
       ],
     );
@@ -2906,14 +2936,14 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
     // While seeking, the page the drag would land on.
     final page = seeking ? (shown * (total - 1)).round() + 1 : _globalPage + 1;
     final position = total <= 0 ? null : l10n.pageOfTotal(page, total);
-    final textColor = AppColors.fg.withValues(alpha: 0.5);
-    final background = AppColors.overviewBackground;
+    final textColor = _rc.faintText;
+    final background = _rc.page;
     // On black: bar #111, fill and bubble #191919.
-    final barColor = Color.alphaBlend(AppColors.fg.withValues(alpha: 0.067), background);
+    final barColor = Color.alphaBlend(_rc.ink.withValues(alpha: 0.067), background);
     final fillColor = seeking
-        ? Color.alphaBlend(AppColors.accentLime.withValues(alpha: 0.12), barColor)
-        : Color.alphaBlend(AppColors.fg.withValues(alpha: 0.098), background);
-    final bubbleColor = Color.alphaBlend(AppColors.fg.withValues(alpha: 0.098), background);
+        ? Color.alphaBlend(_rc.accent.withValues(alpha: 0.12), barColor)
+        : Color.alphaBlend(_rc.ink.withValues(alpha: 0.098), background);
+    final bubbleColor = Color.alphaBlend(_rc.ink.withValues(alpha: 0.098), background);
     const radius = 12.0;
     const tipWidth = 80.0;
 
@@ -2965,7 +2995,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                     decoration: BoxDecoration(
                       color: barColor,
                       borderRadius: BorderRadius.circular(radius),
-                      border: Border.all(color: AppColors.fg.withValues(alpha: 0.06)),
+                      border: Border.all(color: _rc.ink.withValues(alpha: 0.06)),
                     ),
                     child: Stack(
                       children: [
@@ -2987,7 +3017,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                                     maxLines: 1,
                                     style: GoogleFonts.sora(
                                       fontSize: 13,
-                                      color: seeking ? AppColors.accentLime : textColor,
+                                      color: seeking ? _rc.accent : textColor,
                                       fontFeatures: const [ui.FontFeature.tabularFigures()],
                                     ),
                                   ),
@@ -2998,7 +3028,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                                     position,
                                     style: GoogleFonts.sora(
                                       fontSize: 13,
-                                      color: seeking ? AppColors.accentLime : textColor,
+                                      color: seeking ? _rc.accent : textColor,
                                       fontFeatures: const [ui.FontFeature.tabularFigures()],
                                     ),
                                   ),
@@ -3024,10 +3054,10 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                     child: _PercentBubble(
                       label: l10n.percentValue(percent),
                       color: bubbleColor,
-                      textColor: seeking ? AppColors.accentLime : textColor,
+                      textColor: seeking ? _rc.accent : textColor,
                       borderColor: seeking
-                          ? AppColors.accentLime.withValues(alpha: 0.35)
-                          : AppColors.fg.withValues(alpha: 0.05),
+                          ? _rc.accent.withValues(alpha: 0.35)
+                          : _rc.ink.withValues(alpha: 0.05),
                     ),
                   ),
                   ),
@@ -3094,7 +3124,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                       width: 2,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: AppColors.fg.withValues(
+                          color: _rc.ink.withValues(
                             alpha: _controlsVisible || active ? 0.10 : 0.0,
                           ),
                           borderRadius: BorderRadius.circular(1),
@@ -3110,8 +3140,8 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: active
-                              ? AppColors.accentLime
-                              : AppColors.fg.withValues(alpha: _controlsVisible ? 0.55 : 0.32),
+                              ? _rc.accent
+                              : _rc.ink.withValues(alpha: _controlsVisible ? 0.55 : 0.32),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -3132,7 +3162,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         width: menuWidth,
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.popoverSurface,
+          color: _rc.control,
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
@@ -3151,12 +3181,16 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: _highlightColors.entries
                     .map(
-                      (e) => GestureDetector(
-                        onTap: () => _addHighlight(menu.cfiRange, menu.selectedText, e.key),
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          decoration: BoxDecoration(color: e.value, shape: BoxShape.circle),
+                      (e) => Semantics(
+                        button: true,
+                        label: _highlightColorLabel(e.key),
+                        child: GestureDetector(
+                          onTap: () => _addHighlight(menu.cfiRange, menu.selectedText, e.key),
+                          child: Container(
+                            width: 26,
+                            height: 26,
+                            decoration: BoxDecoration(color: e.value, shape: BoxShape.circle),
+                          ),
                         ),
                       ),
                     )
@@ -3165,7 +3199,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Divider(height: 12, color: AppColors.dividerSubtle),
+              child: Divider(height: 12, color: _rc.divider),
             ),
             _selectionMenuAction(
               Icons.note_add_outlined,
@@ -3225,6 +3259,7 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
               id: _SelectionLayout.card,
               child: WordDefinitionCard(
                 word: defineWord,
+                theme: _theme,
                 lookup: lookup,
                 onExpand: () => _defineSelection(defineWord),
               ),
@@ -3241,9 +3276,9 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: AppColors.fgMuted),
+            Icon(icon, size: 18, color: _rc.muted),
             const SizedBox(width: 12),
-            Text(label, style: GoogleFonts.sora(fontSize: 14, color: AppColors.fg)),
+            Text(label, style: GoogleFonts.sora(fontSize: 14, color: _rc.ink)),
           ],
         ),
       ),
@@ -3253,11 +3288,14 @@ class _NativeReaderScreenState extends State<NativeReaderScreen>
 
 /// Figma "Group 651": two short bars, one long bar and three dots (15x15).
 class _ReaderMenuGlyph extends StatelessWidget {
-  const _ReaderMenuGlyph();
+  final ReaderTheme theme;
+
+  const _ReaderMenuGlyph({required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final faint = AppColors.figmaTextFaint;
+    final colors = ReaderColors(theme);
+    final faint = colors.faintText;
     Widget bar(double w, Color c) => Container(
       width: w,
       height: 3.33,
@@ -3274,7 +3312,7 @@ class _ReaderMenuGlyph extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [bar(8.89, AppColors.fg), const SizedBox(width: 1.11), bar(5, faint)]),
+          Row(children: [bar(8.89, colors.ink), const SizedBox(width: 1.11), bar(5, faint)]),
           const SizedBox(height: 2.2),
           bar(15, faint),
           const SizedBox(height: 2.2),

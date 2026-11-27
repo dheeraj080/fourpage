@@ -9,6 +9,7 @@ import '../../core/constants/asset_constants.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme_controller.dart';
 import '../layout/app_nav_rail.dart';
+import '../layout/browse_insets.dart';
 import '../platform/app_haptics.dart';
 import '../layout/window_class.dart';
 import '../widgets/app_chrome.dart';
@@ -112,14 +113,14 @@ class MainNavigationShellState extends State<MainNavigationShell> {
   // 25pt label pill 6pt above it, the whole thing 36pt off the bottom edge
   // over a 170pt fade to the page background.
   static const _pillWidth = 252.0;
-  static const _pillHeight = 68.0;
+  static const _pillHeight = compactNavPillHeight;
   static const _pillPadding = 8.0;
   static const _slotWidth = 55.0;
   static const _slotHeight = 54.0;
   static const _slotGap = 5.0;
-  static const _labelHeight = 25.0;
-  static const _labelGap = 6.0;
-  static const _bottomInset = 36.0;
+  static const _labelHeight = compactNavLabelHeight;
+  static const _labelGap = compactNavLabelGap;
+  static const _bottomInset = compactNavBottomInset;
   static const _animationDuration = Duration(milliseconds: 260);
 
   double _slotCenter(int index) =>
@@ -201,7 +202,7 @@ class MainNavigationShellState extends State<MainNavigationShell> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 170 + (bottom - _bottomInset),
+              height: compactNavClearance + 20 + (bottom - _bottomInset),
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -248,14 +249,18 @@ class MainNavigationShellState extends State<MainNavigationShell> {
                                 widthFactor: 1,
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 180),
-                                  child: Text(
-                                    _tabs[_currentIndex].label,
-                                    key: ValueKey(_currentIndex),
-                                    style: GoogleFonts.sora(
-                                      fontSize: 13,
-                                      height: 1,
-                                      letterSpacing: -0.26,
-                                      color: AppColors.figmaTextFaint,
+                                  // The pill below owns the accessible name
+                                  // and selected state for each destination.
+                                  child: ExcludeSemantics(
+                                    child: Text(
+                                      _tabs[_currentIndex].label,
+                                      key: ValueKey(_currentIndex),
+                                      style: GoogleFonts.sora(
+                                        fontSize: 13,
+                                        height: 1,
+                                        letterSpacing: -0.26,
+                                        color: AppColors.figmaTextFaint,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -304,23 +309,28 @@ class MainNavigationShellState extends State<MainNavigationShell> {
                                   top: (_pillHeight - 2 - _slotHeight) / 2,
                                   width: _slotWidth,
                                   height: _slotHeight,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => _selectTab(i),
-                                    child: Center(
-                                      child: AnimatedSwitcher(
-                                        duration: const Duration(
-                                          milliseconds: 180,
-                                        ),
-                                        child: FigmaIcon(
-                                          i == _currentIndex
-                                              ? _tabs[i].activeIcon
-                                              : _tabs[i].icon,
-                                          key: ValueKey(
-                                            '${i}_${i == _currentIndex}',
+                                  child: Semantics(
+                                    button: true,
+                                    selected: i == _currentIndex,
+                                    label: _tabs[i].label,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => _selectTab(i),
+                                      child: Center(
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(
+                                            milliseconds: 180,
                                           ),
-                                          width: _tabs[i].size.width,
-                                          height: _tabs[i].size.height,
+                                          child: FigmaIcon(
+                                            i == _currentIndex
+                                                ? _tabs[i].activeIcon
+                                                : _tabs[i].icon,
+                                            key: ValueKey(
+                                              '${i}_${i == _currentIndex}',
+                                            ),
+                                            width: _tabs[i].size.width,
+                                            height: _tabs[i].size.height,
+                                          ),
                                         ),
                                       ),
                                     ),

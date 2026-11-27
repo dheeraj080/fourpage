@@ -17,9 +17,12 @@ class AppColors {
   // Foreground: text/icons/hairlines drawn on app surfaces. Use these instead
   // of Colors.white/whiteNN in chrome so light mode inverts correctly.
   static Color get fg => _pick(Colors.white, const Color(0xFF15171C));
-  static Color get fgMuted => fg.withValues(alpha: 0.70);
-  static Color get fgSubtle => fg.withValues(alpha: 0.54);
-  static Color get fgFaint => fg.withValues(alpha: 0.38);
+
+  /// Informational foregrounds. Every step stays above 4.5:1 on both app
+  /// backgrounds; hierarchy comes from size and weight, not unreadable alpha.
+  static Color get fgMuted => fg.withValues(alpha: 0.82);
+  static Color get fgSubtle => fg.withValues(alpha: 0.72);
+  static Color get fgFaint => fg.withValues(alpha: 0.62);
   static Color get fgHairline => fg.withValues(alpha: 0.12);
 
   // Primary Backgrounds
@@ -50,8 +53,11 @@ class AppColors {
   static Color get figmaHeaderTop => _pick(const Color(0xFF151515), const Color(0xFFFFFFFF)); // header gradient start
   static Color get figmaDivider => fg.withValues(alpha: 0.05);
   static Color get figmaTrack => fg.withValues(alpha: 0.30);
-  static Color get figmaTextMuted => fg.withValues(alpha: 0.50);
-  static Color get figmaTextFaint => fg.withValues(alpha: 0.40);
+  static Color get figmaTextMuted => fgSubtle;
+  static Color get figmaTextFaint => fgFaint;
+
+  /// Decorative only (drag handles, sheet grips, inactive tracks). Never use
+  /// this for text: informational hierarchy uses [figmaTextFaint] instead.
   static Color get figmaTextGhost => fg.withValues(alpha: 0.20);
   static Color get accentLavender => _pick(const Color(0xFFB8C0FE), const Color(0xFF4F5BD5));
   static Color get accentBlue => _pick(const Color(0xFF38BDF8), const Color(0xFF0284C7));
@@ -59,7 +65,7 @@ class AppColors {
   // Text Colors
   static Color get textPrimary => _pick(const Color(0xFFF8FAFC), const Color(0xFF15171C));
   static Color get textSecondary => _pick(const Color(0xFF94A3B8), const Color(0xFF4B5563));
-  static Color get textMuted => _pick(const Color(0xFF64748B), const Color(0xFF6B7280));
+  static Color get textMuted => fgSubtle;
 
   // Book page themes (reader content) - fixed, chosen per book.
   static const Color readerDark = Color(0xFF0A0B0E);

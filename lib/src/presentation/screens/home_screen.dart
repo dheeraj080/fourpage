@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               },
                             ),
-                          SliverToBoxAdapter(child: SizedBox(height: browseBottomPadding(context, compact: 140))),
+                          SliverToBoxAdapter(child: SizedBox(height: browseBottomPadding(context))),
                         ],
                       ),
               ),

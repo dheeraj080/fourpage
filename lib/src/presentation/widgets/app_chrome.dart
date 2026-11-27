@@ -19,7 +19,17 @@ class FigmaIcon extends StatelessWidget {
   final double? height;
   final Color? color;
 
-  const FigmaIcon(this.asset, {super.key, this.width, this.height, this.color});
+  /// Accessible name for icon-only actions. Decorative icons leave it unset.
+  final String? semanticLabel;
+
+  const FigmaIcon(
+    this.asset, {
+    super.key,
+    this.width,
+    this.height,
+    this.color,
+    this.semanticLabel,
+  });
 
   // Icons drawn in lime in the Figma export; every other icon is white.
   static const _limeAssets = {
@@ -44,6 +54,7 @@ class FigmaIcon extends StatelessWidget {
       width: width,
       height: height,
       colorFilter: tint == null ? null : ColorFilter.mode(tint, BlendMode.srcIn),
+      semanticsLabel: semanticLabel,
     );
   }
 }
@@ -203,6 +214,7 @@ class BrowseTopBar extends StatelessWidget {
           AssetConstants.iconAddBook,
           width: 17,
           height: 18,
+          semanticLabel: l10n.addBooks,
         ),
         onMiddleTap: onSearchTap,
         onTrailingTap: onAddTap,
@@ -219,7 +231,7 @@ class AppText {
     fontSize: 17,
     height: 18 / 17,
     letterSpacing: -0.34,
-    color: AppColors.figmaTextGhost,
+    color: AppColors.figmaTextFaint,
   );
 
   static TextStyle get searchInput =>
@@ -308,45 +320,50 @@ class UnderlineTabs extends StatelessWidget {
                   children: List.generate(labels.length, (i) {
                     final selected = i == selectedIndex;
                     return Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => selected && onSelectedTap != null ? onSelectedTap!(i) : onSelected(i),
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 14),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedDefaultTextStyle(
-                                duration: _duration,
-                                style: GoogleFonts.sora(
-                                  fontSize: 17,
-                                  height: 14 / 17,
-                                  letterSpacing: -0.34,
-                                  fontWeight: selected
-                                      ? FontWeight.w400
-                                      : FontWeight.w300,
-                                  color: selected
-                                      ? AppColors.fg
-                                      : AppColors.figmaTextFaint,
+                      child: Semantics(
+                        button: true,
+                        selected: selected,
+                        label: labels[i],
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => selected && onSelectedTap != null ? onSelectedTap!(i) : onSelected(i),
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnimatedDefaultTextStyle(
+                                  duration: _duration,
+                                  style: GoogleFonts.sora(
+                                    fontSize: 17,
+                                    height: 14 / 17,
+                                    letterSpacing: -0.34,
+                                    fontWeight: selected
+                                        ? FontWeight.w400
+                                        : FontWeight.w300,
+                                    color: selected
+                                        ? AppColors.fg
+                                        : AppColors.figmaTextFaint,
+                                  ),
+                                  child: Text(labels[i]),
                                 ),
-                                child: Text(labels[i]),
-                              ),
-                              AnimatedSize(
-                                duration: _duration,
-                                curve: Curves.easeOutCubic,
-                                child: selected
-                                    ? Padding(
-                                        padding: EdgeInsets.only(left: 10),
-                                        child: FigmaIcon(
-                                          AssetConstants.iconChevronDown,
-                                          width: 11,
-                                          height: 7,
-                                          color: AppColors.fg,
-                                        ),
-                                      )
-                                    : SizedBox.shrink(),
-                              ),
-                            ],
+                                AnimatedSize(
+                                  duration: _duration,
+                                  curve: Curves.easeOutCubic,
+                                  child: selected
+                                      ? Padding(
+                                          padding: EdgeInsets.only(left: 10),
+                                          child: FigmaIcon(
+                                            AssetConstants.iconChevronDown,
+                                            width: 11,
+                                            height: 7,
+                                            color: AppColors.fg,
+                                          ),
+                                        )
+                                      : SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -383,8 +400,7 @@ class FormatBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final light = AppThemeController.instance.isLight;
-    final ink = color ?? (light ? AppColors.fg.withValues(alpha: 0.35) : const Color(0xFF404040));
+    final ink = color ?? AppColors.fgSubtle;
     return Text(
       format.toUpperCase(),
       style: GoogleFonts.sora(

@@ -1459,4 +1459,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateNotificationChannel => 'App updates';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get highlightColor => 'Highlight colour';
+
+  @override
+  String get highlightYellow => 'Yellow highlight';
+
+  @override
+  String get highlightGreen => 'Green highlight';
+
+  @override
+  String get highlightRed => 'Red highlight';
+
+  @override
+  String get highlightBlue => 'Blue highlight';
+
+  @override
+  String get highlightPurple => 'Purple highlight';
+
+  @override
+  String get renameBook => 'Rename book';
+
+  @override
+  String get bookTitle => 'Title';
+
+  @override
+  String get titleCannotBeEmpty => 'Enter a title';
+
+  @override
+  String renamedBookTo(String title) {
+    return 'Renamed to $title';
+  }
 }

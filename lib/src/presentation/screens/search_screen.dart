@@ -118,22 +118,35 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       if (_query.isNotEmpty)
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _searchController.clear();
-                            setState(() => _query = '');
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.fromLTRB(12, 12, 13, 12),
-                            child: FigmaIcon(AssetConstants.iconCloseSmall, width: 10.5, height: 10.5),
+                        Semantics(
+                          button: true,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 13, 12),
+                              child: FigmaIcon(
+                                AssetConstants.iconCloseSmall,
+                                width: 10.5,
+                                height: 10.5,
+                                semanticLabel: l10n.close,
+                              ),
+                            ),
                           ),
                         )
                       else
                         const SizedBox(width: 12),
                     ],
                   ),
-                  trailing: const FigmaIcon(AssetConstants.iconAddBook, width: 17, height: 18),
+                  trailing: FigmaIcon(
+                    AssetConstants.iconAddBook,
+                    width: 17,
+                    height: 18,
+                    semanticLabel: l10n.addBooks,
+                  ),
                   onTrailingTap: () => showDialog(context: context, builder: (_) => const AddBookDialog()),
                 ),
               ),
@@ -163,7 +176,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         onSecondary: (b, _) => showBookActions(context, b, onOpen: () => _openReader(b)),
                       )
                     : ListView.separated(
-                        padding: EdgeInsets.fromLTRB(20, 0, 23, browseBottomPadding(context, compact: 140)),
+                        padding: EdgeInsets.fromLTRB(20, 0, 23, browseBottomPadding(context)),
                         itemCount: matchingBooks.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 22),
                         itemBuilder: (context, index) {

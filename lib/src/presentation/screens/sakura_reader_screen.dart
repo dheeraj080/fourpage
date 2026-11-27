@@ -32,8 +32,8 @@ import '../state/reader_usage_mixin.dart';
 import '../state/library_controller.dart';
 import '../utils/reader_tap_tracker.dart';
 import '../../core/constants/asset_constants.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_theme_controller.dart';
+import '../theme/reader_colors.dart';
 import '../layout/adaptive_sheet.dart';
 import '../layout/reader_pane_layout.dart';
 import '../layout/spread.dart';
@@ -120,6 +120,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
   late final EpubController _epubController;
   late final Future<File> _bookFileFuture;
   late ReaderPreferences _preferences;
+  ReaderColors get _rc => ReaderColors(_preferences.theme);
 
   // The reading mode the open page is currently laid out in.
   late ScrollMode _appliedScrollMode;
@@ -739,6 +740,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => WordDefinitionSheet(
         word: word,
+        theme: _preferences.theme,
         onSearchInBook: () {
           Navigator.of(sheetContext).pop();
           _searchSelection(word);
@@ -837,6 +839,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraSearchSheet(
         controller: _epubController,
+        theme: _preferences.theme,
         initialQuery: text,
         onNavigateToCfi: (cfi) => _epubController.display(cfi: cfi),
       ),
@@ -854,8 +857,8 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
     final note = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.sheetSurface,
-        title: Text(l10n.addNote, style: TextStyle(color: AppColors.fg)),
+        backgroundColor: _rc.sheet,
+        title: Text(l10n.addNote, style: TextStyle(color: _rc.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -866,7 +869,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.sora(
                 fontSize: 13,
-                color: AppColors.textFaint,
+                color: _rc.faintText,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -875,10 +878,10 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
               controller: noteController,
               autofocus: true,
               maxLines: 3,
-              style: TextStyle(color: AppColors.fg),
+              style: TextStyle(color: _rc.ink),
               decoration: InputDecoration(
                 hintText: l10n.writeANote,
-                hintStyle: TextStyle(color: AppColors.fgFaint),
+                hintStyle: TextStyle(color: _rc.faintText),
               ),
             ),
           ],
@@ -957,7 +960,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.bookmarkedCurrentLocation),
-        backgroundColor: AppColors.accentLime,
+        backgroundColor: _rc.accent,
       ),
     );
   }
@@ -1596,12 +1599,13 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppColors.figmaReaderBackground,
-        border: Border(bottom: BorderSide(color: AppColors.dividerSubtle)),
+        color: _rc.page,
+        border: Border(bottom: BorderSide(color: _rc.divider)),
       ),
       child: Row(
         children: [
           IconButton(
+            tooltip: l10n.goBack,
             icon: const FigmaIcon(AssetConstants.iconBack, width: 9, height: 14),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -1615,29 +1619,32 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                   widget.book.publication.metadata.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: AppColors.fg),
+                  style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: _rc.ink),
                 ),
                 Text(
                   _chapterTitle('current') ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(fontSize: 13, height: 20 / 13, color: AppColors.figmaTextFaint),
+                  style: GoogleFonts.dmSans(fontSize: 13, height: 20 / 13, color: _rc.faintText),
                 ),
               ],
             ),
           ),
           IconButton(
             tooltip: l10n.searchInBook,
-            icon: Icon(Icons.search_rounded, color: AppColors.fg, size: 22),
+            icon: Icon(Icons.search_rounded, color: _rc.ink, size: 22),
             onPressed: _showSearchSheet,
           ),
           IconButton(
             tooltip: l10n.bookmarkThisPage,
-            icon: Icon(Icons.bookmark_add_outlined, color: AppColors.fg, size: 22),
+            icon: Icon(Icons.bookmark_add_outlined, color: _rc.ink, size: 22),
             onPressed: _addBookmark,
           ),
-          ReaderPaneToggles(color: AppColors.fg),
-          IconButton(icon: const _ReaderMenuGlyph(), onPressed: _showReaderMenu),
+          ReaderPaneToggles(color: _rc.ink),
+          IconButton(
+            icon: _ReaderMenuGlyph(theme: _preferences.theme),
+            onPressed: _showReaderMenu,
+          ),
         ],
       ),
     );
@@ -1652,6 +1659,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraCustomizationSheet(
         preferences: _preferences,
+        theme: _preferences.theme,
         onChanged: _onPreferencesChanged,
         brightness: _brightness,
         onBrightnessChanged: (value) => setState(() => _brightness = value),
@@ -1665,6 +1673,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraTocSheet(
+        theme: _preferences.theme,
         currentHref: _currentChapterHref,
         chapters: _toc,
         notes: _session.state.annotations,
@@ -1680,6 +1689,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => SakuraSearchSheet(
         controller: _epubController,
+        theme: _preferences.theme,
         onNavigateToCfi: (cfi) => _epubController.display(cfi: cfi),
       ),
     );
@@ -1702,7 +1712,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
             return _buildLoadFailure(context, l10n.couldNotOpenBookFile('${snapshot.error}'));
           }
           if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator(color: AppColors.accentLime));
+            return Center(child: CircularProgressIndicator(color: _rc.accent));
           }
 
           if (!_epubReady && !_loadTimedOut) {
@@ -1850,6 +1860,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
           contents: ReaderFocusReturn(
             focusNode: _readerFocus,
             child: SakuraTocSheet(
+              theme: _preferences.theme,
               currentHref: _currentChapterHref,
               embedded: true,
               chapters: _toc,
@@ -1862,6 +1873,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
             child: SakuraCustomizationSheet(
               embedded: true,
               preferences: _preferences,
+              theme: _preferences.theme,
               onChanged: _onPreferencesChanged,
               brightness: _brightness,
               onBrightnessChanged: (value) => setState(() => _brightness = value),
@@ -1942,7 +1954,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
     final visible = _swipeDir != 0 && _swipeProgress > 0;
     final forward = _swipeDir >= 0;
     final appear = (_swipeProgress * 3).clamp(0.0, 1.0);
-    final accent = _swipeAvailable ? AppColors.accentLime : AppColors.fgFaint;
+    final accent = _swipeAvailable ? _rc.accent : _rc.faintText;
     final label = !_swipeAvailable
         ? (forward ? l10n.lastChapter : l10n.firstChapter)
         : _swipeArmed
@@ -1968,7 +1980,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _swipeArmed ? accent : AppColors.popoverSurface.withValues(alpha: 0.92),
+                    color: _swipeArmed ? accent : _rc.control.withValues(alpha: 0.92),
                     boxShadow: [
                       BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 14),
                     ],
@@ -1982,7 +1994,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                         child: CircularProgressIndicator(
                           value: _swipeProgress,
                           strokeWidth: 3,
-                          backgroundColor: AppColors.fg.withValues(alpha: 0.12),
+                          backgroundColor: _rc.ink.withValues(alpha: 0.12),
                           valueColor: AlwaysStoppedAnimation(
                             _swipeArmed ? Colors.transparent : accent,
                           ),
@@ -1993,7 +2005,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                             ? Icons.block_rounded
                             : (forward ? Icons.chevron_right_rounded : Icons.chevron_left_rounded),
                         size: 30,
-                        color: _swipeArmed ? Colors.black : accent,
+                        color: _swipeArmed ? _rc.onAccent : accent,
                       ),
                     ],
                   ),
@@ -2002,12 +2014,12 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverSurface.withValues(alpha: 0.92),
+                    color: _rc.control.withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     label,
-                    style: GoogleFonts.sora(fontSize: 11, color: AppColors.fgMuted),
+                    style: GoogleFonts.sora(fontSize: 11, color: _rc.muted),
                   ),
                 ),
               ],
@@ -2020,7 +2032,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
 
   /// Play Books-style line under the page: pages left, and the percentage.
   Widget _buildFooter(double insetBottom) {
-    final color = SakuraEpubMapper.textColorFor(_preferences.theme).withValues(alpha: 0.6);
+    final color = _rc.faintText;
     final style = GoogleFonts.dmSans(fontSize: 11, color: color);
     final pad = AppPreferences.instance.readerPadding.clamp(12.0, 48.0);
     final showPages = _paginated && _pagesLeft >= 0;
@@ -2039,7 +2051,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       height: textBottom + _footerHeight,
       child: IgnorePointer(
         child: ColoredBox(
-          color: SakuraEpubMapper.pageColorFor(_preferences.theme),
+          color: _rc.page,
           child: Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -2194,7 +2206,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         onHorizontalDragUpdate: !vertical && _zoomShrunk ? dragUpdate : null,
         onHorizontalDragEnd: !vertical && _zoomShrunk ? dragEnd : null,
         child: ColoredBox(
-          color: AppColors.figmaReaderBackground,
+          color: _rc.page,
           child: ValueListenableBuilder<double>(
             valueListenable: _chapterDragN,
             builder: (context, drag, _) {
@@ -2271,9 +2283,9 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: armed ? AppColors.accentLime.withValues(alpha: 0.9) : AppColors.figmaSurface,
+          color: armed ? _rc.accent.withValues(alpha: 0.9) : _rc.control,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.fg.withValues(alpha: 0.08)),
+          border: Border.all(color: _rc.ink.withValues(alpha: 0.08)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)],
         ),
         child: Row(
@@ -2282,7 +2294,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
             Icon(
               up ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: armed ? Colors.black : AppColors.fgSubtle,
+              color: armed ? _rc.onAccent : _rc.secondaryText,
             ),
             const SizedBox(width: 6),
             Flexible(
@@ -2292,13 +2304,16 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                 children: [
                   Text(
                     up ? l10n.previousChapter : l10n.nextChapter,
-                    style: GoogleFonts.sora(fontSize: 10, color: armed ? Colors.black54 : AppColors.fgSubtle),
+                    style: GoogleFonts.sora(
+                      fontSize: 10,
+                      color: armed ? _rc.onAccent.withValues(alpha: 0.72) : _rc.secondaryText,
+                    ),
                   ),
                   Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.sora(fontSize: 13, color: armed ? Colors.black : AppColors.fg),
+                    style: GoogleFonts.sora(fontSize: 13, color: armed ? _rc.onAccent : _rc.ink),
                   ),
                 ],
               ),
@@ -2316,15 +2331,15 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
-          color: AppColors.figmaSurface,
+          color: _rc.control,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.fg.withValues(alpha: 0.08)),
+          border: Border.all(color: _rc.ink.withValues(alpha: 0.08)),
         ),
         child: Text(
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.sora(fontSize: 12, color: AppColors.fgMuted),
+          style: GoogleFonts.sora(fontSize: 12, color: _rc.muted),
         ),
       ),
     );
@@ -2338,12 +2353,12 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, color: AppColors.fgFaint, size: 40),
+            Icon(Icons.error_outline_rounded, color: _rc.faintText, size: 40),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.sora(color: AppColors.fgMuted, fontSize: 14),
+              style: GoogleFonts.sora(color: _rc.muted, fontSize: 14),
             ),
             const SizedBox(height: 20),
             TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.goBack)),
@@ -2364,18 +2379,18 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.popoverSurface,
+            color: _rc.control,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.fg.withValues(alpha: 0.12)),
+            border: Border.all(color: _rc.ink.withValues(alpha: 0.12)),
           ),
           child: Row(
             children: [
-              Icon(Icons.hourglass_empty_rounded, color: AppColors.fgSubtle, size: 18),
+              Icon(Icons.hourglass_empty_rounded, color: _rc.secondaryText, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   l10n.stillOpeningThisBook,
-                  style: GoogleFonts.sora(color: AppColors.fgMuted, fontSize: 13),
+                  style: GoogleFonts.sora(color: _rc.muted, fontSize: 13),
                 ),
               ),
               TextButton(
@@ -2429,13 +2444,18 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
       right: 0,
       child: Container(
         key: _topBarKey,
-        color: AppColors.figmaReaderBackground,
+        color: _rc.page,
         child: SafeArea(
           bottom: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 15, 10),
             child: SegmentedTopBar(
-              leading: const FigmaIcon(AssetConstants.iconBack, width: 9, height: 14),
+              leading: FigmaIcon(
+                AssetConstants.iconBack,
+                width: 9,
+                height: 14,
+                semanticLabel: l10n.goBack,
+              ),
               onLeadingTap: () => Navigator.of(context).pop(),
               middle: Padding(
                 padding: const EdgeInsets.only(left: 24, right: 12),
@@ -2447,7 +2467,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                       widget.book.publication.metadata.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: AppColors.fg),
+                      style: GoogleFonts.dmSans(fontSize: 15, height: 21 / 15, color: _rc.ink),
                     ),
                     Text(
                       _chapterTitle('current') ?? '',
@@ -2456,14 +2476,14 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
                         height: 20 / 13,
-                        color: AppColors.figmaTextFaint,
+                        color: _rc.faintText,
                       ),
                     ),
                   ],
                 ),
               ),
               onMiddleTap: _showTocSheet,
-              trailing: const _ReaderMenuGlyph(),
+              trailing: _ReaderMenuGlyph(theme: _preferences.theme),
               onTrailingTap: _showReaderMenu,
             ),
           ),
@@ -2478,7 +2498,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
     final choice = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(media.size.width - 220, media.padding.top + 80, 15, 0),
-      color: AppColors.figmaSurface,
+      color: _rc.control,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       items: [
         for (final (value, label) in [
@@ -2491,7 +2511,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
           PopupMenuItem<String>(
             value: value,
             height: 52,
-            child: Text(label, style: GoogleFonts.sora(fontSize: 16, color: AppColors.fg)),
+            child: Text(label, style: GoogleFonts.sora(fontSize: 16, color: _rc.ink)),
           ),
       ],
     );
@@ -2534,15 +2554,16 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         child: Container(
           padding: const EdgeInsets.fromLTRB(8, 4, 20, 4),
           decoration: BoxDecoration(
-            color: AppColors.pillSurface,
+            color: _rc.control,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.fg.withValues(alpha: 0.1)),
+            border: Border.all(color: _rc.ink.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
               Expanded(
                 child: _ProgressScrubber(
                   value: shown,
+                  theme: _preferences.theme,
                   enabled: _locationsReady,
                   onChanged: (v) {
                     _onUserActivity();
@@ -2559,7 +2580,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                   textAlign: TextAlign.right,
                   style: GoogleFonts.sora(
                     fontSize: 13,
-                    color: _seekPreview != null ? AppColors.fg : AppColors.textFaint,
+                    color: _seekPreview != null ? _rc.ink : _rc.faintText,
                   ),
                 ),
               ),
@@ -2624,7 +2645,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                       width: 2,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: AppColors.fg.withValues(
+                          color: _rc.ink.withValues(
                             alpha: _controlsVisible || active ? 0.10 : 0.0,
                           ),
                           borderRadius: BorderRadius.circular(1),
@@ -2640,8 +2661,8 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: active
-                              ? AppColors.accentLime
-                              : AppColors.fg.withValues(alpha: _controlsVisible ? 0.55 : 0.32),
+                              ? _rc.accent
+                              : _rc.ink.withValues(alpha: _controlsVisible ? 0.55 : 0.32),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -2662,7 +2683,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         width: menuWidth,
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.popoverSurface,
+          color: _rc.control,
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
@@ -2695,7 +2716,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Divider(height: 12, color: AppColors.dividerSubtle),
+              child: Divider(height: 12, color: _rc.divider),
             ),
             _selectionMenuAction(
               Icons.note_add_outlined,
@@ -2755,6 +2776,7 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
               id: _SelectionLayout.card,
               child: WordDefinitionCard(
                 word: defineWord,
+                theme: _preferences.theme,
                 lookup: lookup,
                 onExpand: () => _defineSelection(defineWord),
               ),
@@ -2771,9 +2793,9 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: AppColors.fgMuted),
+            Icon(icon, size: 18, color: _rc.muted),
             const SizedBox(width: 12),
-            Text(label, style: GoogleFonts.sora(fontSize: 14, color: AppColors.fg)),
+            Text(label, style: GoogleFonts.sora(fontSize: 14, color: _rc.ink)),
           ],
         ),
       ),
@@ -2783,11 +2805,14 @@ class _SakuraReaderScreenState extends State<SakuraReaderScreen>
 
 /// Figma "Group 651": two short bars, one long bar and three dots (15x15).
 class _ReaderMenuGlyph extends StatelessWidget {
-  const _ReaderMenuGlyph();
+  final ReaderTheme theme;
+
+  const _ReaderMenuGlyph({required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final faint = AppColors.figmaTextFaint;
+    final colors = ReaderColors(theme);
+    final faint = colors.faintText;
     Widget bar(double w, Color c) => Container(
       width: w,
       height: 3.33,
@@ -2804,7 +2829,7 @@ class _ReaderMenuGlyph extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [bar(8.89, AppColors.fg), const SizedBox(width: 1.11), bar(5, faint)]),
+          Row(children: [bar(8.89, colors.ink), const SizedBox(width: 1.11), bar(5, faint)]),
           const SizedBox(height: 2.2),
           bar(15, faint),
           const SizedBox(height: 2.2),
@@ -2827,12 +2852,14 @@ class _ReaderMenuGlyph extends StatelessWidget {
 /// Reports the dragged position live and commits it on release.
 class _ProgressScrubber extends StatefulWidget {
   final double value;
+  final ReaderTheme theme;
   final bool enabled;
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
 
   const _ProgressScrubber({
     required this.value,
+    required this.theme,
     required this.enabled,
     required this.onChanged,
     required this.onChangeEnd,
@@ -2844,6 +2871,7 @@ class _ProgressScrubber extends StatefulWidget {
 
 class _ProgressScrubberState extends State<_ProgressScrubber> {
   bool _dragging = false;
+  ReaderColors get _rc => ReaderColors(widget.theme);
 
   @override
   Widget build(BuildContext context) {
@@ -2884,7 +2912,7 @@ class _ProgressScrubberState extends State<_ProgressScrubber> {
                   height: _dragging ? 5 : 3,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.fg.withValues(alpha: 0.12),
+                      color: _rc.ink.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -2895,7 +2923,7 @@ class _ProgressScrubberState extends State<_ProgressScrubber> {
                   height: _dragging ? 5 : 3,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.accentLime,
+                      color: _rc.accent,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -2909,7 +2937,7 @@ class _ProgressScrubberState extends State<_ProgressScrubber> {
                     opacity: widget.enabled ? 1 : 0,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: AppColors.accentLime,
+                        color: _rc.accent,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4),

@@ -11,7 +11,8 @@ import '../../domain/entities/bookmark.dart';
 import '../../domain/entities/locator.dart';
 import '../utils/saved_item_actions.dart';
 import '../../domain/entities/nav_item.dart';
-import '../theme/app_colors.dart';
+import '../../domain/entities/reader_preferences.dart';
+import '../theme/reader_colors.dart';
 import 'app_chrome.dart';
 
 /// Chapters / Notes sheet for the sakura_epub-backed reader, laid out like
@@ -19,6 +20,7 @@ import 'app_chrome.dart';
 /// parses from the book (nested entries collapse under their parent) and
 /// the book's own notes/highlights - no fabricated page numbers.
 class SakuraTocSheet extends StatefulWidget {
+  final ReaderTheme theme;
   final List<NavItem> chapters;
   final ValueChanged<String> onNavigateToHref;
 
@@ -42,6 +44,7 @@ class SakuraTocSheet extends StatefulWidget {
 
   const SakuraTocSheet({
     super.key,
+    required this.theme,
     required this.chapters,
     required this.onNavigateToHref,
     this.notes = const [],
@@ -56,8 +59,9 @@ class SakuraTocSheet extends StatefulWidget {
 }
 
 class _SakuraTocSheetState extends State<SakuraTocSheet> {
-  static Color get _sheetColor => AppColors.figmaSurface;
-  static Color get _handleColor => AppColors.figmaTextGhost;
+  ReaderColors get _colors => ReaderColors(widget.theme);
+  Color get _sheetColor => _colors.sheet;
+  Color get _handleColor => _colors.grip;
 
   int _tab = 0;
   final Set<NavItem> _expanded = {};
@@ -206,9 +210,17 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                 _tabButton(l10n.notes, 1),
                 const Spacer(),
                 if (!widget.embedded)
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: const FigmaIcon(AssetConstants.iconCloseCircle, width: 48, height: 48),
+                Semantics(
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: FigmaIcon(
+                      AssetConstants.iconCloseCircle,
+                      width: 48,
+                      height: 48,
+                      semanticLabel: l10n.close,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -228,36 +240,41 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
   /// Sora 17 label with a 121x3 white underline when active.
   Widget _tabButton(String label, int index) {
     final selected = _tab == index;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => _tab = index),
-      child: SizedBox(
-        width: 121,
-        height: 55,
-        child: Column(
-          children: [
-            const SizedBox(height: 22),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 180),
-              style: GoogleFonts.sora(
-                fontSize: 17,
-                height: 14 / 17,
-                letterSpacing: -0.34,
-                fontWeight: selected ? FontWeight.w400 : FontWeight.w300,
-                color: selected ? AppColors.fg : AppColors.figmaTextFaint,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _tab = index),
+        child: SizedBox(
+          width: 121,
+          height: 55,
+          child: Column(
+            children: [
+              const SizedBox(height: 22),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
+                style: GoogleFonts.sora(
+                  fontSize: 17,
+                  height: 14 / 17,
+                  letterSpacing: -0.34,
+                  fontWeight: selected ? FontWeight.w400 : FontWeight.w300,
+                  color: selected ? _colors.ink : _colors.faintText,
+                ),
+                child: Text(label),
               ),
-              child: Text(label),
-            ),
-            const Spacer(),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: 3,
-              decoration: BoxDecoration(
-                color: selected ? AppColors.fg : Colors.transparent,
-                borderRadius: BorderRadius.circular(2),
+              const Spacer(),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                height: 3,
+                decoration: BoxDecoration(
+                  color: selected ? _colors.ink : Colors.transparent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -276,7 +293,7 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
         controller: _chapterScroll,
         padding: const EdgeInsets.fromLTRB(23, 0, 22, 24),
         itemCount: widget.chapters.length,
-        separatorBuilder: (_, _) => Divider(height: 1, thickness: 1, color: AppColors.figmaDivider),
+        separatorBuilder: (_, _) => Divider(height: 1, thickness: 1, color: _colors.divider),
         itemBuilder: (context, index) => _buildTopLevel(widget.chapters[index], index),
       ),
     );
@@ -359,7 +376,7 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                         width: 3,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: AppColors.figmaLime,
+                          color: _colors.accent,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -378,12 +395,12 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                     style: GoogleFonts.sora(
                       fontSize: 15,
                       height: 25 / 15,
-                      color: active ? AppColors.figmaLime : AppColors.fg,
+                      color: active ? _colors.accent : _colors.ink,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: GoogleFonts.sora(fontSize: 15, height: 25 / 15, color: AppColors.figmaTextMuted),
+                    style: GoogleFonts.sora(fontSize: 15, height: 25 / 15, color: _colors.secondaryText),
                   ),
                 ],
               ),
@@ -409,13 +426,13 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
 
   Widget _sectionLabel(String text) => Padding(
         padding: const EdgeInsets.fromLTRB(9, 8, 0, 4),
-        child: Text(text, style: GoogleFonts.sora(fontSize: 12, color: AppColors.figmaTextFaint)),
+        child: Text(text, style: GoogleFonts.sora(fontSize: 12, color: _colors.faintText)),
       );
 
   Widget _removeButton(String tooltip, VoidCallback onPressed) => IconButton(
         tooltip: tooltip,
         onPressed: onPressed,
-        icon: Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.figmaTextFaint),
+        icon: Icon(Icons.delete_outline_rounded, size: 20, color: _colors.faintText),
       );
 
   Widget _buildNotes() {
@@ -448,10 +465,10 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                     padding: const EdgeInsets.fromLTRB(9, 6, 0, 6),
                     child: Row(
                       children: [
-                        Icon(Icons.bookmark_rounded, size: 20, color: AppColors.accentLime),
+                        Icon(Icons.bookmark_rounded, size: 20, color: _colors.accent),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(b.title, style: GoogleFonts.sora(fontSize: 14, color: AppColors.fg)),
+                          child: Text(b.title, style: GoogleFonts.sora(fontSize: 14, color: _colors.ink)),
                         ),
                         if (removable) _removeButton(l10n.removeBookmark, () => _removeBookmark(context, b)),
                       ],
@@ -489,13 +506,13 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                               '“${a.textQuote ?? ''}”',
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.amethysta(fontSize: 16, height: 1.45, color: AppColors.fg),
+                              style: GoogleFonts.amethysta(fontSize: 16, height: 1.45, color: _colors.ink),
                             ),
                             if ((a.note ?? '').isNotEmpty) ...[
                               const SizedBox(height: 6),
                               Text(
                                 a.note!,
-                                style: GoogleFonts.sora(fontSize: 14, color: AppColors.figmaTextMuted),
+                                style: GoogleFonts.sora(fontSize: 14, color: _colors.secondaryText),
                               ),
                             ],
                           ],
@@ -511,7 +528,7 @@ class _SakuraTocSheetState extends State<SakuraTocSheet> {
                 ),
               ),
             ),
-            Divider(height: 1, thickness: 1, color: AppColors.figmaDivider),
+            Divider(height: 1, thickness: 1, color: _colors.divider),
           ],
         ],
       ),

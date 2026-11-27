@@ -18,7 +18,9 @@ import '../platform/folder_tree.dart';
 enum BookFormat { epub, pdf }
 
 class BookItem {
-  final Publication publication;
+  /// Mutable so a user-chosen title can be applied to the one catalog entry
+  /// shared with the loading queue and the open reader.
+  Publication publication;
   final BookFormat kind;
   final Color coverGradientStart;
   final Color coverGradientEnd;
@@ -101,6 +103,11 @@ class LibraryController extends ChangeNotifier {
   // User-made shelves (see shelves.dart).
   ShelfCollection _shelves = ShelfCollection();
   static const _keyShelves = 'shelves';
+
+  // Book titles chosen by the user. Kept out of publication metadata because
+  // opening an EPUB re-parses it and rewrites the publications table.
+  final Map<String, String> _titleOverrides = <String, String>{};
+  static const _keyTitleOverrides = 'book_title_overrides';
 
   List<BookItem> get books => List.unmodifiable(_books);
 
@@ -201,6 +208,50 @@ class LibraryController extends ChangeNotifier {
       debugPrint('Error restoring last opened: $e');
     }
   }
+
+  Future<void> _loadTitleOverrides() async {
+    try {
+      final json = await _settingsRepo.getString(_keyTitleOverrides);
+      if (json == null || json.isEmpty) return;
+      _titleOverrides.addAll(Map<String, String>.from(jsonDecode(json) as Map));
+    } catch (e) {
+      debugPrint('Error restoring book titles: $e');
+    }
+  }
+
+  Future<void> _persistTitleOverrides() async {
+    try {
+      await _settingsRepo.setString(_keyTitleOverrides, jsonEncode(_titleOverrides));
+    } catch (e) {
+      debugPrint('Could not save book titles: $e');
+    }
+  }
+
+  /// Applies a user-chosen title without touching the parsed publication ID
+  /// or fingerprint. Opening an EPUB rewrites the publications table, so the
+  /// override lives in app settings instead of in publication metadata.
+  Publication _withStoredTitle(Publication pub) {
+    final title = _titleOverrides[pub.id];
+    if (title == null || title.isEmpty || title == pub.metadata.title) return pub;
+    return pub.copyWith(metadata: pub.metadata.copyWith(title: title));
+  }
+
+  /// Renames a PDF or EPUB in the catalog. The stored book file and reading
+  /// progress are left alone.
+  Future<void> renameBook(String publicationId, String title) async {
+    final index = _books.indexWhere((b) => b.publication.id == publicationId);
+    if (index < 0) return;
+    final clean = DocumentConverter.cleanTitle(title);
+    if (clean.isEmpty || clean == _books[index].publication.metadata.title) return;
+    _titleOverrides[publicationId] = clean;
+    await _persistTitleOverrides();
+    final book = _books[index];
+    book.publication = book.publication.copyWith(
+      metadata: book.publication.metadata.copyWith(title: clean),
+    );
+    notifyListeners();
+  }
+
   bool get isInitialized => _isInitialized;
 
   /// True once the stored books are listed (their files may still be loading).
@@ -274,6 +325,7 @@ class LibraryController extends ChangeNotifier {
     }
 
     await _loadLastOpened();
+    await _loadTitleOverrides();
     try {
       _shelves = ShelfCollection.decode(await _settingsRepo.getString(_keyShelves));
     } catch (e) {
@@ -432,6 +484,7 @@ class LibraryController extends ChangeNotifier {
   /// (see [ensureLoaded]). A book whose file is gone is skipped (it can't be
   /// read) rather than shown with made-up content.
   Future<void> _restore(Publication pub) async {
+    pub = _withStoredTitle(pub);
     if (_books.any((b) => b.publication.id == pub.id)) return;
     try {
       final pdf = await getBookFile(pub.id, kind: BookFormat.pdf);
@@ -760,6 +813,8 @@ class LibraryController extends ChangeNotifier {
     _books.clear();
     _scannedFolders.clear();
     _bookFolderMap.clear();
+    _titleOverrides.clear();
+    await _persistTitleOverrides();
     _shelves.clear();
     _activeBook = null;
     await AppDatabase.instance.clearLibraryData();
@@ -783,6 +838,7 @@ class LibraryController extends ChangeNotifier {
     _loadQueue.removeWhere((b) => b.publication.id == publicationId);
     _books.removeWhere((b) => b.publication.id == publicationId);
     _bookFolderMap.remove(publicationId);
+    if (_titleOverrides.remove(publicationId) != null) await _persistTitleOverrides();
     _persistFolderData();
     _shelves.forgetBook(publicationId);
     _shelvesChanged();

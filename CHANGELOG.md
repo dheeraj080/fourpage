@@ -6,6 +6,13 @@ All notable changes to Fourpage. The format follows
 
 ## [Unreleased]
 
+## [1.0.12] - 2026-11-27
+
+### Changed
+- Release APKs are smaller: unused Android code and resources are stripped,
+  the bundled EPUB engine no longer ships its development source map, and
+  the two startup illustrations use compressed WebP images.
+
 ## [1.0.11] - 2026-11-26
 
 ### Added

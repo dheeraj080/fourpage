@@ -5,8 +5,8 @@ class AssetConstants {
   AssetConstants._();
 
   // Images
-  static const String startupPageBg = 'assets/images/startup_page_bg.png';
-  static const String startupImportBg = 'assets/images/startup_import_bg.png';
+  static const String startupPageBg = 'assets/images/startup_page_bg.webp';
+  static const String startupImportBg = 'assets/images/startup_import_bg.webp';
 
   // Icons (exported from the Figma file - keep them as-is, don't redraw)
   static const String logoBook = 'assets/icons/logo_book.png';

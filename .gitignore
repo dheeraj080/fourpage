@@ -65,9 +65,14 @@ aread_v1_test.db
 /graphify-out/
 
 # Local AI-assistant / tooling state
+/.agent/
+/.agents/
 /.claude/
+/.impeccable/
+/.opencode/
 /.superpowers/
 /CLAUDE.md
+/PRODUCT.md
 /.graphifyignore
 
 # Local sample books (some are commercial titles - never publish them)
